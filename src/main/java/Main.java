@@ -43,17 +43,22 @@ public class Main {
 
                     case "type" :{
                         if(arguments.equals("")) break;
+                        boolean fileFound = false;
                         for(String s : directories){
+                            if(!Files.exists(Paths.get(s)) && !Files.isDirectory(Paths.get(s))) continue;
                             try(Stream<Path> files = Files.walk(Paths.get(s))){
-                                boolean fileFound = files.map(filePath -> filePath.getFileName())
+                                fileFound = files.map(filePath -> filePath.getFileName())
                                                         .anyMatch(fileName -> fileName != null && fileName.toString().equals(arguments));
-                                if(fileFound) System.out.println(arguments + " is " + s + (System.getProperty("os.name").toLowerCase().contains("win") ? "\\" : "/") + arguments);
-                                else  System.out.println(arguments + ": not found");                        
+                                if(fileFound) {
+                                    System.out.println(arguments + " is " + s + (System.getProperty("os.name").toLowerCase().contains("win") ? "\\" : "/") + arguments);
+                                    break;
+                                }
                             } catch (IOException io){
                                 System.err.println("Exception occured while iterating through directories " + io.getMessage());
                                 io.printStackTrace();
                             }
                         }
+                        if(!fileFound) System.out.println(arguments + ": not found");
                     }
                     break;
                     default : 
