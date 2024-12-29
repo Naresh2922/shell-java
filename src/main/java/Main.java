@@ -5,8 +5,6 @@ public class Main {
     public static void main(String[] args) throws Exception {
         // Uncomment this block to pass the first stage
 
-        List<String> commandsList = List.of("echo", "exit", "type");
-
         String path = System.getenv("PATH");
         String[] directories = path.split(System.getProperty("os.name").toLowerCase().contains("win") ? ";" : ":");
         
@@ -43,6 +41,7 @@ public class Main {
                         if(arguments.equals("")) break;
                         boolean found = false;
                         for(String s : directories){
+                            System.out.println(s);
                             if(s.trim().endsWith(arguments)) {
                                 System.out.println(arguments + " is " + s);
                                 found = true;
