@@ -67,14 +67,20 @@ public class Main {
                         break;
                     case "cat" :
                         List<String> files = new ArrayList<>();
+                        String reg = null;
                         if(arguments.contains("\"")){
-                            files.addAll(Arrays.stream(arguments.split("\""))
-                                                                .map(s -> s.trim())
-                                                                .filter(s -> !s.isEmpty())                                         
-                                                                .collect(Collectors.toList())); 
+                             reg = "\"";
+                        } else if(arguments.contains("\'")){
+                            reg = "\'";
                         } else {
                             Arrays.stream(arguments.split(" ")).forEach(f -> files.add(f));
+                            printContent(files);
+                            break;
                         }
+                        files.addAll(Arrays.stream(arguments.split(reg))
+                                                                .map(s -> s.trim())
+                                                                .filter(s -> !s.isEmpty())                                         
+                                                                .collect(Collectors.toList()));
                         printContent(files);
                         break;
                     default :
