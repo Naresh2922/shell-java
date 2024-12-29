@@ -43,12 +43,19 @@ public class Main {
                         break;
                     case "echo" : {
                         String reg = null;
+                        arguments = arguments.replace("\\n", "\n");
+                        arguments = arguments.replace("\\t", "\t");
+                        arguments = arguments.replace("\\\\", "\\");
                         if(arguments.contains("\"")){
                             reg = "\"";
                         } else if (arguments.contains("\'")) {
                             reg = "\'";
                         } else {
-                            System.out.println(Arrays.stream(arguments.split("\\s+")).collect(Collectors.joining(" ")));
+                            String string = Arrays.stream(arguments.split("\\s+")).collect(Collectors.joining(" "));
+                            while(string.contains("\\ ")){
+                                string = string.replace("\\ ", " ");
+                            }
+                            System.out.println(string);
                             break;
                         }
                         System.out.println(Arrays.stream(arguments.split(reg))
