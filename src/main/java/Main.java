@@ -64,7 +64,7 @@ public class Main {
                             int start = arguments.indexOf('\'');
                             int last = arguments.indexOf('\'', start + 1);
                             while(last != -1){
-                                files.add(arguments.substring(start + 1, last));
+                                files.add(arguments.substring(start + 1, last).trim());
                                 start = arguments.indexOf('\'', last + 1);
                                 last = arguments.indexOf('\'', start + 1);
                             } 
