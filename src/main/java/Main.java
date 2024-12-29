@@ -39,8 +39,10 @@ public class Main {
                     case "type" :
                         if(commandsList.contains(arguments)){
                             System.out.println(arguments + " is a shell builtin");
-                            break;
-                        }                       
+                        } else {
+                            System.out.println(arguments + ": " + "command not found");
+                        } 
+                        break;                      
                     default : 
                         System.err.println(input + ": " + "command not found");
                         break;
