@@ -39,7 +39,7 @@ public class Main {
                         break;
                     default :
                         String filePath = isCommandExist(command, directories);
-                        if(filePath.equals("")) System.err.println(input + ": command not found");
+                        if(filePath.equals("")) System.err.println(command + ": command not found");
                         else {
                             String[] argument = arguments.split(" ");
                             String[] commandWithArguments = new String[argument.length + 1];
@@ -60,7 +60,7 @@ public class Main {
                 System.out.println(arguments + " is a shell builtin");
                 return;
             }
-        String filePath = isCommandExist(arguments, directories)
+        String filePath = isCommandExist(arguments, directories);
         if(filePath.equals("")) System.out.println(arguments + ": not found");
         else System.out.println(arguments + " is " + filePath);
     }
