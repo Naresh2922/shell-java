@@ -1,8 +1,11 @@
 import java.util.Scanner;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) throws Exception {
         // Uncomment this block to pass the first stage
+
+        List<String> commandsList = List.of("echo", "exit", "type");
         
         try(Scanner scanner = new Scanner(System.in)){
             while(true){
@@ -29,11 +32,15 @@ public class Main {
                     }
 
                     case "echo" : {
-                        System.out.print(arguments);
-                        System.out.print(System.lineSeparator());
+                        System.out.print(arguments + System.lineSeparator());
                         break;
                     }
 
+                    case "type" :
+                        if(commandsList.contains(arguments)){
+                            System.out.println(arguments + " is a shell builtin");
+                            break;
+                        }                       
                     default : 
                         System.err.println(input + ": " + "command not found");
                         break;
