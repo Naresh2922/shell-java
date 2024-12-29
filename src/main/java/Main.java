@@ -12,7 +12,7 @@ import java.nio.file.Paths;
 import java.nio.file.Path;
 
 public class Main {
-    private static final List<String> commandsList = List.of("type", "exit", "echo");
+    private static final List<String> commandsList = List.of("type", "exit", "echo", "pwd");
     public static void main(String[] args) throws Exception {
         // Uncomment this block to pass the first stage
         String path = System.getenv("PATH");
