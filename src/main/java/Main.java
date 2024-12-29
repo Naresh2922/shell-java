@@ -7,19 +7,37 @@ public class Main {
         try(Scanner scanner = new Scanner(System.in)){
             while(true){
                 System.out.print("$ ");
-                String input = scanner.nextLine();
-                String[] inputArray = input.split(" ");
-                if(inputArray[0].equals("exit") && inputArray.length == 2){
-                    try{
-                        if(Integer.parseInt(inputArray[1]) == 0){
-                            System.exit(0);
+                String input = scanner.nextLine().trim();
+                String[] inputArray = input.split(" ", 2);
+                String command = inputArray[0].trim();
+                String arguments = inputArray.length > 1 ? inputArray[1].trim() : ""; 
+                switch(command){
+                    case "exit" : {
+                        if(!arguments.equals("")){
+                            try{
+                                if(Integer.parseInt(inputArray[1]) == 0){
+                                    System.exit(0);
+                                }
+                            } catch (NumberFormatException nfe){
+                                System.err.println("format -- exit <integer> :" + nfe.getMessage());
+                            }
+                            
+                        } else {
+                            System.err.println("expected format -- exit <integer> -- exit 0 for termination");
                         }
-                    } catch (NumberFormatException nfe){
-                        System.err.println("format -- exit <integer> :" + nfe.getMessage());
+                        break;
                     }
-                    
+
+                    case "echo" : {
+                        System.out.print(arguments);
+                        System.out.print(System.lineSeparator());
+                        break;
+                    }
+
+                    default : 
+                        System.err.println(input + ": " + "command not found");
+                        break;
                 }
-                System.err.println(input + ": " + "command not found");
             }         
         }       
     }
