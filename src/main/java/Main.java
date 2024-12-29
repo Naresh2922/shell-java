@@ -5,7 +5,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.util.stream.Stream;
@@ -36,6 +35,9 @@ public class Main {
                     }
                     case "type" :
                         type(arguments, directories);
+                        break;
+                    case "pwd" :
+                        System.out.println(Paths.get("").toAbsolutePath().toString());
                         break;
                     default :
                         String filePath = isCommandExist(command, directories);
