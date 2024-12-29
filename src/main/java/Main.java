@@ -46,9 +46,9 @@ public class Main {
                         arguments = arguments.replace("\\n", "\n");
                         arguments = arguments.replace("\\t", "\t");
                         arguments = arguments.replace("\\\\", "\\");
-                        if(arguments.contains("\"")){
+                        if(arguments.startsWith("\"")){
                             reg = "\"";
-                        } else if (arguments.contains("\'")) {
+                        } else if (arguments.startsWith("\'")) {
                             reg = "\'";
                         } else {
                             String string = Arrays.stream(arguments.split("\\s+")).collect(Collectors.joining(" "));
