@@ -46,8 +46,12 @@ public class Main {
                         if(arguments.equals("/") || arguments.equals("")) break;
                         String[] arrayArguments = arguments.split(" ");
                         for(String arg : arrayArguments){
-                            if(arg.startsWith("../")) {
-                                falseDirectory = falseDirectory.getParentFile();
+                            if(arg.matches("^(\\.\\./)+$")) {
+                                int count = (int) arg.chars().filter(c -> c == '/').count();
+                                while(count != 0){
+                                    falseDirectory = falseDirectory.getParentFile();
+                                    count--;
+                                }                             
                             } else if (arg.startsWith("./")){
                                 falseDirectory = new File(falseDirectory.getAbsolutePath() + "//" + arg).getCanonicalFile();
                             } else if (arg.startsWith("~")){
