@@ -42,13 +42,18 @@ public class Main {
                         exit(arguments);
                         break;
                     case "echo" : {
+                        String reg = null;
                         if(arguments.contains("\"")){
-                            System.out.println(Arrays.stream(arguments.split("\""))
-                                                     .filter(s -> !s.trim().isEmpty())
-                                                     .collect(Collectors.joining(" ")));
+                            reg = "\"";
+                        } else if (arguments.contains("\'")) {
+                            reg = "\'";
+                        } else {
+                            System.out.println(Arrays.stream(arguments.split("\\s+")).collect(Collectors.joining(" ")));
                             break;
                         }
-                        System.out.println(Arrays.stream(arguments.split("\\s+")).collect(Collectors.joining(" ")));
+                        System.out.println(Arrays.stream(arguments.split(reg))
+                                                     .filter(s -> !s.trim().isEmpty())
+                                                     .collect(Collectors.joining(" ")));
                         break;
                     }
                     case "type" :
