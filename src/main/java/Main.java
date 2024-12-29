@@ -106,7 +106,7 @@ public class Main {
                     } catch (IOException io) {
                         io.printStackTrace();
                     }                   
-                } else if (arg.startsWith("~")){
+                } else if (arg.equals("~")){
                     falseDirectory = new File(Main.home);
                 } else if (arg.matches("/[^/]+")) {
                     if(Files.exists(Paths.get(arg)) && Files.isDirectory(Paths.get(arg))){
