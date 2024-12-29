@@ -13,14 +13,14 @@ import java.nio.file.Path;
 import java.io.File;
 
 public class Main {
-    private static final List<String> commandsList = List.of("type", "exit", "echo", "pwd", "cd");
+    private static final List<String> commandList = List.of("type", "exit", "echo", "pwd", "cd");
     public static void main(String[] args) throws Exception {
         // Uncomment this block to pass the first stage
         String path = System.getenv("PATH");
         String[] directories = path.split(System.getProperty("os.name").toLowerCase().contains("win") ? ";" : ":");
         String currentWorkingDirectory = Paths.get("").toAbsolutePath().toString();
         File falseDirectory = new File(currentWorkingDirectory);
-        
+        File newDir = new File("");
         try(Scanner scanner = new Scanner(System.in)){
             while(true){
                 System.out.print("$ ");
@@ -51,13 +51,19 @@ public class Main {
                         } else if (arguments.startsWith("~")){
                             falseDirectory = new File("/");
                         } else if (arguments.matches("/[^/]+")) {
-                            if(new File(arguments).getCanonicalFile().exists()){
-                                falseDirectory = new File(arguments).getCanonicalFile();
+                            newDir = new File(arguments).getCanonicalFile()
+                            if(newDir.exists() && newDir.isDirectory()){
+                                falseDirectory = newDir;
                             } else {
                                 System.out.println("cd: "+ arguments + ": No such file or directory");
                             }
                         } else {
-                            System.out.println("cd: "+ arguments + ": No such file or directory");
+                            newDir = new File(falseDirectory, arguments).getCanonicalFile();
+                            if (newDir.exists() && newDir.isDirectory()) {
+                                falseDirectory = newDir;
+                            } else {
+                                System.out.println("cd: " + arguments + ": No such file or directory");
+                            }
                         }
                         break;
                     default :
@@ -79,7 +85,7 @@ public class Main {
 
     private static void type(String arguments, String[] directories){
         if(arguments.equals("")) return;
-            if(commandsList.contains(arguments)){
+            if(commandList.contains(arguments)){
                 System.out.println(arguments + " is a shell builtin");
                 return;
             }
