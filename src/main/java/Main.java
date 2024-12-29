@@ -43,7 +43,7 @@ public class Main {
                         break;
                     case "echo" : {
                         if(arguments.contains("\"")){
-                            System.out.println(arguments.substring(1, arguments.length() - 1));
+                            System.out.println(Arrays.stream(arguments.split("\"")).collect(Collectors.joining(" ")));
                             break;
                         }
                         System.out.println(Arrays.stream(arguments.split("\\s+")).collect(Collectors.joining(" ")));
