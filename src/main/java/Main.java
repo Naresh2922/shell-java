@@ -19,7 +19,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 
 public class Main {
-    private static final Set<String> commandList = Set.of("type", "exit", "echo", "pwd", "cd", "cat");
+    private static final Set<String> commandList = Set.of("type", "exit", "echo", "pwd", "cd");
     static String path = System.getenv("PATH");
     static String home = System.getenv("HOME");
     static String currentWorkingDirectory = Paths.get("").toAbsolutePath().toString();
@@ -71,7 +71,7 @@ public class Main {
                         printContent(files);
                         break;
                     default :
-                        String filePath = isFileExist(command, directories);
+                        String filePath = isExecutableFile(command, directories);
                         if(filePath.equals("")) System.err.println(command + ": command not found");
                         else {
                             String[] argument = arguments.split(" ");
@@ -93,7 +93,7 @@ public class Main {
                 System.out.println(arguments + " is a shell builtin");
                 return;
             }
-        String filePath = isFileExist(arguments, directories);
+        String filePath = isExecutableFile(arguments, directories);
         if(filePath.equals("")) System.out.println(arguments + ": not found");
         else System.out.println(arguments + " is " + filePath);
     }
@@ -147,7 +147,7 @@ public class Main {
             }
     }
 
-    private static String isFileExist(String arguments, String[] directories){
+    private static String isExecutableFile(String arguments, String[] directories){
         for(String s : directories){
             if(!Files.exists(Paths.get(s)) && !Files.isDirectory(Paths.get(s))) continue;
             try(Stream<Path> files = Files.walk(Paths.get(s))){
