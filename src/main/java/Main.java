@@ -16,12 +16,14 @@ public class Main {
     private static final Set<String> commandList = Set.of("type", "exit", "echo", "pwd", "cd");
     static String path = System.getenv("PATH");
     static String home = System.getenv("HOME");
+    static String currentWorkingDirectory = Paths.get("").toAbsolutePath().toString();
+    static File falseDirectory = new File(currentWorkingDirectory);
+    
     public static void main(String[] args) throws Exception {
         // Uncomment this block to pass the first stage
         
         String[] directories = Main.path.split(System.getProperty("os.name").toLowerCase().contains("win") ? ";" : ":");
-        String currentWorkingDirectory = Paths.get("").toAbsolutePath().toString();
-        File falseDirectory = new File(currentWorkingDirectory);
+        
 
         try(Scanner scanner = new Scanner(System.in)){
             while(true){
@@ -42,10 +44,10 @@ public class Main {
                         type(arguments, directories);
                         break;
                     case "pwd" :
-                        System.out.println(falseDirectory.getAbsolutePath());
+                        System.out.println(Main.falseDirectory.getAbsolutePath());
                         break;
                     case "cd" :
-                        cd(arguments, falseDirectory);
+                        cd(arguments);
                         break;
                     default :
                         String filePath = isFileExist(command, directories);
@@ -90,27 +92,27 @@ public class Main {
         }
     }
 
-    private static void cd(String arguments, File falseDirectory) {
+    private static void cd(String arguments) {
         if(arguments.equals("/") || arguments.equals("")) return;
             String[] arrayArguments = arguments.split(" ");
             for(String arg : arrayArguments){
                 if(arg.matches("^(\\.\\./)+$")) {
                     int count = (int) arg.chars().filter(c -> c == '/').count();
                     while(count != 0){
-                        falseDirectory = falseDirectory.getParentFile();
+                        Main.falseDirectory = Main.falseDirectory.getParentFile();
                         count--;
                     }                             
                 } else if (arg.startsWith("./")){
                     try{
-                        falseDirectory = new File(falseDirectory.getAbsolutePath() + "//" + arg).getCanonicalFile();
+                        Main.falseDirectory = new File(Main.falseDirectory.getAbsolutePath() + "//" + arg).getCanonicalFile();
                     } catch (IOException io) {
                         io.printStackTrace();
                     }                   
                 } else if (arg.equals("~")){
-                    falseDirectory = new File(Main.home);
+                    Main.falseDirectory = new File(Main.home);
                 } else if (arg.matches("/[^/]+")) {
                     if(Files.exists(Paths.get(arg)) && Files.isDirectory(Paths.get(arg))){
-                        falseDirectory = new File(arg);
+                        Main.falseDirectory = new File(arg);
                     } else {
                         System.out.println("cd: "+ arg + ": No such file or directory");
                     }
