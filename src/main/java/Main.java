@@ -61,13 +61,10 @@ public class Main {
                     case "cat" :
                         List<String> files = new ArrayList<>();
                         if(arguments.contains("\'")){
-                            int start = arguments.indexOf('\'');
-                            int last = arguments.indexOf('\'', start + 1);
-                            while(last != -1){
-                                files.add(arguments.substring(start + 1, last).trim());
-                                start = arguments.indexOf('\'', last + 1);
-                                last = arguments.indexOf('\'', start + 1);
-                            } 
+                            files.addAll(Arrays.stream(arguments.split("'"))
+                                                                .map(s -> s.trim())
+                                                                .filter(s -> !s.isEmpty())                                         
+                                                                .collect(Collectors.toList())); 
                         } else {
                             Arrays.stream(arguments.split(" ")).forEach(f -> files.add(f));
                         }
