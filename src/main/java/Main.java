@@ -42,7 +42,7 @@ public class Main {
                         exit(arguments);
                         break;
                     case "echo" : {
-                        if(arguments.contains("\'")){
+                        if(arguments.contains("\"")){
                             System.out.println(arguments.substring(1, arguments.length() - 1));
                             break;
                         }
@@ -60,8 +60,8 @@ public class Main {
                         break;
                     case "cat" :
                         List<String> files = new ArrayList<>();
-                        if(arguments.contains("\'")){
-                            files.addAll(Arrays.stream(arguments.split("'"))
+                        if(arguments.contains("\"")){
+                            files.addAll(Arrays.stream(arguments.split("\""))
                                                                 .map(s -> s.trim())
                                                                 .filter(s -> !s.isEmpty())                                         
                                                                 .collect(Collectors.toList())); 
@@ -71,7 +71,7 @@ public class Main {
                         printContent(files);
                         break;
                     default :
-                        String filePath = isExecutableFile(command, directories);
+                        String filePath = isFileExecutable(command, directories);
                         if(filePath.equals("")) System.err.println(command + ": command not found");
                         else {
                             String[] argument = arguments.split(" ");
@@ -93,7 +93,7 @@ public class Main {
                 System.out.println(arguments + " is a shell builtin");
                 return;
             }
-        String filePath = isExecutableFile(arguments, directories);
+        String filePath = isFileExecutable(arguments, directories);
         if(filePath.equals("")) System.out.println(arguments + ": not found");
         else System.out.println(arguments + " is " + filePath);
     }
@@ -147,7 +147,7 @@ public class Main {
             }
     }
 
-    private static String isExecutableFile(String arguments, String[] directories){
+    private static String isFileExecutable(String arguments, String[] directories){
         for(String s : directories){
             if(!Files.exists(Paths.get(s)) && !Files.isDirectory(Paths.get(s))) continue;
             try(Stream<Path> files = Files.walk(Paths.get(s))){
