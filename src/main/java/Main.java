@@ -125,10 +125,9 @@ public class Main {
                 }
             });
 
-            int code = process.waitFor();
+            process.waitFor();
             executorService.shutdown();
             executorService.awaitTermination(30, TimeUnit.SECONDS);
-            System.out.println("Exited with code : " +  code);
         } catch (InterruptedException | IOException ioe) {
             System.err.println("process Interrupted : " + ioe.getMessage());
             ioe.printStackTrace();
