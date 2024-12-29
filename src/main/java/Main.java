@@ -51,7 +51,7 @@ public class Main {
                         } else if (arguments.startsWith("~")){
                             falseDirectory = new File("/");
                         } else if (arguments.matches("/[^/]+")) {
-                            newDir = new File(arguments).getCanonicalFile()
+                            newDir = new File(arguments).getCanonicalFile();
                             if(newDir.exists() && newDir.isDirectory()){
                                 falseDirectory = newDir;
                             } else {
