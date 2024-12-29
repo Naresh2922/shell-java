@@ -3,12 +3,6 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) throws Exception {
         // Uncomment this block to pass the first stage
-
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run(){
-                System.out.println("JVM is shutting down.");
-            }
-        });
         
         try(Scanner scanner = new Scanner(System.in)){
             while(true){
