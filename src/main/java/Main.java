@@ -1,4 +1,7 @@
 import java.util.Set;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -11,16 +14,17 @@ import java.util.stream.Stream;
 import java.nio.file.Paths;
 import java.nio.file.Path;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 
 public class Main {
-    private static final Set<String> commandList = Set.of("type", "exit", "echo", "pwd", "cd");
+    private static final Set<String> commandList = Set.of("type", "exit", "echo", "pwd", "cd", "cat");
     static String path = System.getenv("PATH");
     static String home = System.getenv("HOME");
     static String currentWorkingDirectory = Paths.get("").toAbsolutePath().toString();
-    static File falseDirectory = new File(currentWorkingDirectory);
+    static File pseudoDirectory = new File(currentWorkingDirectory);
     
     public static void main(String[] args) throws Exception {
-        // Uncomment this block to pass the first stage
         
         String[] directories = Main.path.split(System.getProperty("os.name").toLowerCase().contains("win") ? ";" : ":");
         
@@ -37,6 +41,10 @@ public class Main {
                         exit(arguments);
                         break;
                     case "echo" : {
+                        if(arguments.contains("\'")){
+                            System.out.println(arguments.substring(1, arguments.length() - 1) + System.lineSeparator());
+                            break;
+                        }
                         System.out.print(arguments + System.lineSeparator());
                         break;
                     }
@@ -44,10 +52,25 @@ public class Main {
                         type(arguments, directories);
                         break;
                     case "pwd" :
-                        System.out.println(Main.falseDirectory.getAbsolutePath());
+                        System.out.println(Main.pseudoDirectory.getAbsolutePath());
                         break;
                     case "cd" :
                         cd(arguments);
+                        break;
+                    case "cat" :
+                        List<String> files = new ArrayList<>();
+                        if(arguments.contains("\'")){
+                            int start = arguments.indexOf('\'');
+                            int last = arguments.indexOf('\'', start);
+                            while(last <= arguments.length()){
+                                files.add(arguments.substring(start + 1, last));
+                                start = arguments.indexOf('\'', last);
+                                last = arguments.indexOf('\'', start);
+                            } 
+                        } else {
+                            Arrays.stream(arguments.split(" ")).forEach(f -> files.add(f));
+                        }
+                        printContent(files);
                         break;
                     default :
                         String filePath = isFileExist(command, directories);
@@ -99,26 +122,26 @@ public class Main {
                 if(arg.matches("^(\\.\\./)+$")) {
                     int count = (int) arg.chars().filter(c -> c == '/').count();
                     while(count != 0){
-                        Main.falseDirectory = Main.falseDirectory.getParentFile();
+                        Main.pseudoDirectory = Main.pseudoDirectory.getParentFile();
                         count--;
                     }                             
                 } else if (arg.startsWith("./")){
                     try{
-                        Main.falseDirectory = new File(Main.falseDirectory.getAbsolutePath() + "//" + arg).getCanonicalFile();
+                        Main.pseudoDirectory = new File(Main.pseudoDirectory.getAbsolutePath() + "//" + arg).getCanonicalFile();
                     } catch (IOException io) {
                         io.printStackTrace();
                     }                   
                 } else if (arg.equals("~")){
-                    Main.falseDirectory = new File(Main.home);
+                    Main.pseudoDirectory = new File(Main.home);
                 } else if (arg.matches("/[^/]+")) {
                     if(Files.exists(Paths.get(arg)) && Files.isDirectory(Paths.get(arg))){
-                        Main.falseDirectory = new File(arg);
+                        Main.pseudoDirectory = new File(arg);
                     } else {
                         System.out.println("cd: "+ arg + ": No such file or directory");
                     }
                 } else {
                     if(Files.exists(Paths.get(arg)) && Files.isDirectory(Paths.get(arg))){
-                        falseDirectory = new File(arg);
+                        pseudoDirectory = new File(arg);
                     } else {
                         System.out.println("cd: "+ arg + ": No such file or directory");
                     }
@@ -178,5 +201,22 @@ public class Main {
             System.err.println("process Interrupted : " + ioe.getMessage());
             ioe.printStackTrace();
         }
+    }
+
+    private static void printContent(List<String> files){
+        files.stream().forEach(file -> {
+            if(Files.exists(Paths.get(file)) && Files.isReadable(Paths.get(file))){
+                try(BufferedReader br = new BufferedReader(new FileReader(file))){
+                    String line;
+                    while((line = br.readLine()) != null){
+                        System.out.println(line);
+                    }
+                } catch (FileNotFoundException fnf){
+                    fnf.printStackTrace();
+                } catch (IOException io){
+                    io.printStackTrace();
+                }
+            }
+        });
     }
 }
