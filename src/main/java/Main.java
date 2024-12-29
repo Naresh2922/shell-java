@@ -63,9 +63,9 @@ public class Main {
                         if(arguments.contains("\'")){
                             int start = arguments.indexOf('\'');
                             int last = arguments.indexOf('\'', start + 1);
-                            while(last <= arguments.length()){
+                            while(last != -1){
                                 files.add(arguments.substring(start + 1, last));
-                                start = arguments.indexOf('\'', last);
+                                start = arguments.indexOf('\'', last + 1);
                                 last = arguments.indexOf('\'', start + 1);
                             } 
                         } else {
