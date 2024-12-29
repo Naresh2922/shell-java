@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.nio.file.Paths;
 import java.nio.file.Path;
@@ -45,7 +46,7 @@ public class Main {
                             System.out.println(arguments.substring(1, arguments.length() - 1));
                             break;
                         }
-                        System.out.print(arguments + System.lineSeparator());
+                        System.out.println(Arrays.stream(arguments.split("\\s+")).collect(Collectors.joining(" ")));
                         break;
                     }
                     case "type" :
@@ -211,6 +212,7 @@ public class Main {
                     while((line = br.readLine()) != null){
                         System.out.println(line);
                     }
+                    System.out.print(" ");
                 } catch (FileNotFoundException fnf){
                     fnf.printStackTrace();
                 } catch (IOException io){
