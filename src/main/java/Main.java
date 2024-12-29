@@ -34,7 +34,7 @@ public class Main {
             while(true){
                 System.out.print("$ ");
                 String input = scanner.nextLine().trim();
-                String[] inputArray = input.split(" ", 2);
+                String[] inputArray = input.split("\\s+", 2);
                 String command = inputArray[0].trim();
                 String arguments = inputArray.length > 1 ? inputArray[1].trim() : ""; 
                 switch(command){
@@ -43,7 +43,9 @@ public class Main {
                         break;
                     case "echo" : {
                         if(arguments.contains("\"")){
-                            System.out.println(Arrays.stream(arguments.split("\"")).collect(Collectors.joining("")));
+                            System.out.println(Arrays.stream(arguments.split("\""))
+                                                     .filter(s -> !s.trim().isEmpty())
+                                                     .collect(Collectors.joining(" ")));
                             break;
                         }
                         System.out.println(Arrays.stream(arguments.split("\\s+")).collect(Collectors.joining(" ")));
