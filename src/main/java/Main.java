@@ -1,5 +1,9 @@
 import java.util.Scanner;
-import java.util.List;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.stream.Stream;
+import java.nio.file.Paths;
+import java.nio.file.Path;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -39,16 +43,17 @@ public class Main {
 
                     case "type" :{
                         if(arguments.equals("")) break;
-                        boolean found = false;
                         for(String s : directories){
-                            System.out.println(s);
-                            if(s.trim().endsWith(arguments)) {
-                                System.out.println(arguments + " is " + s);
-                                found = true;
-                                break;
-                            };
+                            try(Stream<Path> files = Files.walk(Paths.get(s))){
+                                boolean fileFound = files.map(filePath -> filePath.getFileName())
+                                                        .anyMatch(fileName -> fileName != null && fileName.toString().equals(arguments));
+                                if(fileFound) System.out.println(arguments + " is " + s + (System.getProperty("os.name").toLowerCase().contains("win") ? "\\" : "/") + arguments);
+                                else  System.out.println(arguments + ": not found");                        
+                            } catch (IOException io){
+                                System.err.println("Exception occured while iterating through directories " + io.getMessage());
+                                io.printStackTrace();
+                            }
                         }
-                        if(!found) System.out.println(arguments + ": not found");
                     }
                     break;
                     default : 
