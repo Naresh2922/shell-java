@@ -43,7 +43,7 @@ public class Main {
                         if(arguments.equals("")) break;
                         boolean found = false;
                         for(String s : directories){
-                            if(s.endsWith(arguments)) {
+                            if(s.trim().endsWith(arguments)) {
                                 System.out.println(arguments + " is " + s);
                                 found = true;
                                 break;
