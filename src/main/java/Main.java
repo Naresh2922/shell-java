@@ -20,7 +20,7 @@ public class Main {
         String[] directories = path.split(System.getProperty("os.name").toLowerCase().contains("win") ? ";" : ":");
         String currentWorkingDirectory = Paths.get("").toAbsolutePath().toString();
         File falseDirectory = new File(currentWorkingDirectory);
-        File newDir = new File("");
+
         try(Scanner scanner = new Scanner(System.in)){
             while(true){
                 System.out.print("$ ");
@@ -40,7 +40,7 @@ public class Main {
                         type(arguments, directories);
                         break;
                     case "pwd" :
-                        System.out.println(falseDirectory);
+                        System.out.println(falseDirectory.getAbsolutePath());
                         break;
                     case "cd" :
                         if(arguments.equals("/") || arguments.equals("")) break;
@@ -51,18 +51,16 @@ public class Main {
                         } else if (arguments.startsWith("~")){
                             falseDirectory = new File("/");
                         } else if (arguments.matches("/[^/]+")) {
-                            newDir = new File(arguments).getCanonicalFile();
-                            if(newDir.exists() && newDir.isDirectory()){
-                                falseDirectory = newDir;
+                            if(Files.exists(Paths.get(arguments)) && Files.isDirectory(Paths.get(arguments))){
+                                falseDirectory = new File(arguments);
                             } else {
                                 System.out.println("cd: "+ arguments + ": No such file or directory");
                             }
                         } else {
-                            newDir = new File(falseDirectory, arguments).getCanonicalFile();
-                            if (newDir.exists() && newDir.isDirectory()) {
-                                falseDirectory = newDir;
+                            if(Files.exists(Paths.get(arguments)) && Files.isDirectory(Paths.get(arguments))){
+                                falseDirectory = new File(arguments);
                             } else {
-                                System.out.println("cd: " + arguments + ": No such file or directory");
+                                System.out.println("cd: "+ arguments + ": No such file or directory");
                             }
                         }
                         break;
