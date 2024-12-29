@@ -45,7 +45,7 @@ public class Main {
                             System.out.println(arguments.substring(1, arguments.length() - 1));
                             break;
                         }
-                        System.out.print(arguments);
+                        System.out.print(arguments + System.lineSeparator());
                         break;
                     }
                     case "type" :
