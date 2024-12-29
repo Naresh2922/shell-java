@@ -1,4 +1,4 @@
-import java.util.List;
+import java.util.Set;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -13,7 +13,7 @@ import java.nio.file.Path;
 import java.io.File;
 
 public class Main {
-    private static final List<String> commandList = List.of("type", "exit", "echo", "pwd", "cd");
+    private static final Set<String> commandList = Set.of("type", "exit", "echo", "pwd", "cd");
     public static void main(String[] args) throws Exception {
         // Uncomment this block to pass the first stage
         String path = System.getenv("PATH");
@@ -44,23 +44,26 @@ public class Main {
                         break;
                     case "cd" :
                         if(arguments.equals("/") || arguments.equals("")) break;
-                        if(arguments.startsWith("../")) {
-                            falseDirectory = falseDirectory.getParentFile();
-                        } else if (arguments.startsWith("./")){
-                            falseDirectory = new File(falseDirectory.getAbsolutePath() + "//" + arguments).getCanonicalFile();
-                        } else if (arguments.startsWith("~")){
-                            falseDirectory = new File("/");
-                        } else if (arguments.matches("/[^/]+")) {
-                            if(Files.exists(Paths.get(arguments)) && Files.isDirectory(Paths.get(arguments))){
-                                falseDirectory = new File(arguments);
+                        String[] arrayArguments = arguments.split(" ");
+                        for(String arg : arrayArguments){
+                            if(arg.startsWith("../")) {
+                                falseDirectory = falseDirectory.getParentFile();
+                            } else if (arg.startsWith("./")){
+                                falseDirectory = new File(falseDirectory.getAbsolutePath() + "//" + arg).getCanonicalFile();
+                            } else if (arg.startsWith("~")){
+                                falseDirectory = new File("/");
+                            } else if (arg.matches("/[^/]+")) {
+                                if(Files.exists(Paths.get(arg)) && Files.isDirectory(Paths.get(arg))){
+                                    falseDirectory = new File(arg);
+                                } else {
+                                    System.out.println("cd: "+ arg + ": No such file or directory");
+                                }
                             } else {
-                                System.out.println("cd: "+ arguments + ": No such file or directory");
-                            }
-                        } else {
-                            if(Files.exists(Paths.get(arguments)) && Files.isDirectory(Paths.get(arguments))){
-                                falseDirectory = new File(arguments);
-                            } else {
-                                System.out.println("cd: "+ arguments + ": No such file or directory");
+                                if(Files.exists(Paths.get(arg)) && Files.isDirectory(Paths.get(arg))){
+                                    falseDirectory = new File(arg);
+                                } else {
+                                    System.out.println("cd: "+ arg + ": No such file or directory");
+                                }
                             }
                         }
                         break;
