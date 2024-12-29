@@ -6,6 +6,9 @@ public class Main {
         // Uncomment this block to pass the first stage
 
         List<String> commandsList = List.of("echo", "exit", "type");
+
+        String path = System.getenv("PATH");
+        String[] directories = path.split(System.getProperty("os.name").toLowerCase().contains("win") ? ";" : ":");
         
         try(Scanner scanner = new Scanner(System.in)){
             while(true){
@@ -22,11 +25,11 @@ public class Main {
                                     System.exit(0);
                                 }
                             } catch (NumberFormatException nfe){
-                                System.err.println("format -- exit <integer> :" + nfe.getMessage());
+                                System.err.println("Expected format -- exit <integer> :" + nfe.getMessage());
                             }
                             
                         } else {
-                            System.err.println("expected format -- exit <integer> -- exit 0 for termination");
+                            System.err.println("Expected format -- exit <integer> -- exit 0 for termination");
                         }
                         break;
                     }
@@ -36,15 +39,21 @@ public class Main {
                         break;
                     }
 
-                    case "type" :
-                        if(commandsList.contains(arguments)){
-                            System.out.println(arguments + " is a shell builtin");
-                        } else {
-                            System.out.println(arguments + ": " + "not found");
-                        } 
-                        break;                      
+                    case "type" :{
+                        if(arguments.equals("")) break;
+                        boolean found = false;
+                        for(String s : directories){
+                            if(s.endsWith(arguments)) {
+                                System.out.println(arguments + " is " + s);
+                                found = true;
+                                break;
+                            };
+                        }
+                        if(!found) System.out.println(arguments + ": not found");
+                    }
+                    break;
                     default : 
-                        System.err.println(input + ": " + "command not found");
+                        System.err.println(input + ": command not found");
                         break;
                 }
             }         
