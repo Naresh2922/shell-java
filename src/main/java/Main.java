@@ -40,7 +40,7 @@ public class Main {
                         if(commandsList.contains(arguments)){
                             System.out.println(arguments + " is a shell builtin");
                         } else {
-                            System.out.println(arguments + ": " + "command not found");
+                            System.out.println(arguments + ": " + " not found");
                         } 
                         break;                      
                     default : 
