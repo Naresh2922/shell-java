@@ -51,8 +51,8 @@ public class Main {
                         } else if (arguments.startsWith("~")){
                             falseDirectory = new File("/");
                         } else if (arguments.matches("/[^/]+")) {
-                            if(new File(falseDirectory.toString() + "//" + arguments).getCanonicalFile().exists()){
-                                falseDirectory = new File(falseDirectory.toString() + "//" + arguments).getCanonicalFile();
+                            if(new File(arguments).getCanonicalFile().exists()){
+                                falseDirectory = new File(arguments).getCanonicalFile();
                             } else {
                                 System.out.println("cd: "+ arguments + ": No such file or directory");
                             }
