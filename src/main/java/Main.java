@@ -1,3 +1,4 @@
+import java.util.List;
 import java.util.Scanner;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -8,6 +9,8 @@ import java.nio.file.Path;
 public class Main {
     public static void main(String[] args) throws Exception {
         // Uncomment this block to pass the first stage
+
+        List<String> commandsList = List.of("type", "exit", "echo");
 
         String path = System.getenv("PATH");
         String[] directories = path.split(System.getProperty("os.name").toLowerCase().contains("win") ? ";" : ":");
@@ -43,6 +46,10 @@ public class Main {
 
                     case "type" :{
                         if(arguments.equals("")) break;
+                        if(commandsList.contains(arguments)){
+                            System.out.println(arguments + " is a shell builtin");
+                            break;
+                        }
                         boolean fileFound = false;
                         for(String s : directories){
                             if(!Files.exists(Paths.get(s)) && !Files.isDirectory(Paths.get(s))) continue;
