@@ -10,13 +10,16 @@ import java.nio.file.Files;
 import java.util.stream.Stream;
 import java.nio.file.Paths;
 import java.nio.file.Path;
+import java.io.File;
 
 public class Main {
-    private static final List<String> commandsList = List.of("type", "exit", "echo", "pwd");
+    private static final List<String> commandsList = List.of("type", "exit", "echo", "pwd", "cd");
     public static void main(String[] args) throws Exception {
         // Uncomment this block to pass the first stage
         String path = System.getenv("PATH");
         String[] directories = path.split(System.getProperty("os.name").toLowerCase().contains("win") ? ";" : ":");
+        String currentWorkingDirectory = Paths.get("").toAbsolutePath().toString();
+        File falseDirectory = new File(currentWorkingDirectory);
         
         try(Scanner scanner = new Scanner(System.in)){
             while(true){
@@ -37,10 +40,28 @@ public class Main {
                         type(arguments, directories);
                         break;
                     case "pwd" :
-                        System.out.println(Paths.get("").toAbsolutePath().toString());
+                        System.out.println(falseDirectory);
+                        break;
+                    case "cd" :
+                        if(arguments.equals("/") || arguments.equals("")) break;
+                        if(arguments.startsWith("../")) {
+                            falseDirectory = falseDirectory.getParentFile();
+                        } else if (arguments.startsWith("./")){
+                            falseDirectory = new File(falseDirectory.getAbsolutePath() + "//" + arguments).getCanonicalFile();
+                        } else if (arguments.startsWith("~")){
+                            falseDirectory = new File("/");
+                        } else if (arguments.matches("/[^/]+")) {
+                            if(new File(falseDirectory.toString() + "//" + arguments).getCanonicalFile().exists()){
+                                falseDirectory = new File(falseDirectory.toString() + "//" + arguments).getCanonicalFile();
+                            } else {
+                                System.out.println("cd: "+ arguments + ": No such file or directory");
+                            }
+                        } else {
+                            System.out.println("cd: "+ arguments + ": No such file or directory");
+                        }
                         break;
                     default :
-                        String filePath = isCommandExist(command, directories);
+                        String filePath = isFileExist(command, directories);
                         if(filePath.equals("")) System.err.println(command + ": command not found");
                         else {
                             String[] argument = arguments.split(" ");
@@ -62,7 +83,7 @@ public class Main {
                 System.out.println(arguments + " is a shell builtin");
                 return;
             }
-        String filePath = isCommandExist(arguments, directories);
+        String filePath = isFileExist(arguments, directories);
         if(filePath.equals("")) System.out.println(arguments + ": not found");
         else System.out.println(arguments + " is " + filePath);
     }
@@ -82,7 +103,7 @@ public class Main {
         }
     }
 
-    private static String isCommandExist(String arguments, String[] directories){
+    private static String isFileExist(String arguments, String[] directories){
         for(String s : directories){
             if(!Files.exists(Paths.get(s)) && !Files.isDirectory(Paths.get(s))) continue;
             try(Stream<Path> files = Files.walk(Paths.get(s))){
