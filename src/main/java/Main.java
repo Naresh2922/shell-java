@@ -71,6 +71,7 @@ public class Main {
                         } else {
                             Arrays.stream(arguments.split(" ")).forEach(f -> files.add(f));
                         }
+                        System.out.println(files);
                         printContent(files);
                         break;
                     default :
