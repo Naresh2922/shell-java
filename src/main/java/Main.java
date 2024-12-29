@@ -42,10 +42,10 @@ public class Main {
                         break;
                     case "echo" : {
                         if(arguments.contains("\'")){
-                            System.out.println(arguments.substring(1, arguments.length() - 1) + System.lineSeparator());
+                            System.out.println(arguments.substring(1, arguments.length() - 1));
                             break;
                         }
-                        System.out.print(arguments + System.lineSeparator());
+                        System.out.print(arguments);
                         break;
                     }
                     case "type" :
