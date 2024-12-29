@@ -62,11 +62,11 @@ public class Main {
                         List<String> files = new ArrayList<>();
                         if(arguments.contains("\'")){
                             int start = arguments.indexOf('\'');
-                            int last = arguments.indexOf('\'', start);
+                            int last = arguments.indexOf('\'', start + 1);
                             while(last <= arguments.length()){
                                 files.add(arguments.substring(start + 1, last));
                                 start = arguments.indexOf('\'', last);
-                                last = arguments.indexOf('\'', start);
+                                last = arguments.indexOf('\'', start + 1);
                             } 
                         } else {
                             Arrays.stream(arguments.split(" ")).forEach(f -> files.add(f));
@@ -210,9 +210,8 @@ public class Main {
                 try(BufferedReader br = new BufferedReader(new FileReader(file))){
                     String line;
                     while((line = br.readLine()) != null){
-                        System.out.println(line);
+                        System.out.print(line);
                     }
-                    System.out.print(" ");
                 } catch (FileNotFoundException fnf){
                     fnf.printStackTrace();
                 } catch (IOException io){
