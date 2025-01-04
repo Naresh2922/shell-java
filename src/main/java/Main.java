@@ -1,10 +1,6 @@
 import java.io.*;
 import java.nio.file.DirectoryStream;
-import java.util.Set;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -238,7 +234,7 @@ public class Main {
                 for(Path entry : directoryStream){
                    files.add(arguments[1] + "/" + entry.getFileName().toString());
                 }
-                files.sort(String::compareTo);
+                files.sort(Collections.reverseOrder());
                 handleRedirection(files, redirectionFile, arguments[0]);
             } catch (IOException io){
                 io.printStackTrace();
@@ -308,26 +304,23 @@ public class Main {
     }
 
     private static void handleRedirection(List<String> files, String redirectionFile, String command){
-        try(BufferedWriter bw = new BufferedWriter(new FileWriter(redirectionFile))){
-            files.forEach(file -> {
-                Path path = Paths.get(file);
-                if(Files.exists(path) && Files.isReadable(path) && !Files.isDirectory(path)){
-                    try(BufferedReader br = new BufferedReader(new FileReader(String.valueOf(path)))){
-                        String line;
-                        while((line = br.readLine()) != null){
-                            bw.write(line);
-                            bw.newLine();
-                        }
-                    } catch (IOException io){
-                        io.printStackTrace();
+        files.forEach(file -> {
+            Path path = Paths.get(file);
+            if(Files.exists(path) && Files.isReadable(path) && !Files.isDirectory(path)){
+                try(BufferedWriter bw = new BufferedWriter(new FileWriter(redirectionFile));
+                    BufferedReader br = new BufferedReader(new FileReader(String.valueOf(path)))){
+                    String line;
+                    while((line = br.readLine()) != null){
+                        bw.write(line);
+                        bw.newLine();
                     }
-                } else {
-                    System.err.println(command + ": " + file + ": No such file or directory");
+                } catch (IOException io){
+                    io.printStackTrace();
                 }
-            });
-        } catch (IOException io){
-            io.printStackTrace();
-        }
+            } else {
+                System.err.println(command + ": " + file + ": No such file or directory");
+            }
+        });
     }
 }
 
