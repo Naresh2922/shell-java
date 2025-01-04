@@ -72,7 +72,7 @@ public class Main {
                             String[] commandWithArguments = new String[argument.length + 1];
                             commandWithArguments[0] = command;
                             System.arraycopy(argument, 0, commandWithArguments, 1, argument.length);
-                            executeCommand(commandWithArguments);
+                            int exitCode = executeCommand(commandWithArguments);
                         }
                         break;
                 }
@@ -200,7 +200,7 @@ public class Main {
         return "";
     }
 
-    private static void executeCommand(String[] arguments){
+    private static int executeCommand(String[] arguments){
         try {
             ExecutorService executorService =  Executors.newFixedThreadPool(2);
 
@@ -234,12 +234,14 @@ public class Main {
             //    executorService.shutdown();
             //}
             executorService.shutdown();
+            return exit;
 
 
         } catch (InterruptedException | IOException ioe) {
             System.err.println("process Interrupted : " + ioe.getMessage());
             ioe.printStackTrace();
         }
+        return 0;
     }
 
     private static void printContent(List<String> files){
