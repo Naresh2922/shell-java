@@ -236,7 +236,7 @@ public class Main {
             List<String> files = new ArrayList<>();
             try(DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(arguments[1]))){
                 for(Path entry : directoryStream){
-                   files.add(entry.getFileName().toString());
+                   files.add(Arrays.toString(arguments) + entry.getFileName().toString());
                 }
                 handleRedirection(files, redirectionFile, arguments[0]);
             } catch (IOException io){
@@ -309,7 +309,7 @@ public class Main {
     private static void handleRedirection(List<String> files, String redirectionFile, String command){
         files.forEach(file -> {
             Path path = Paths.get(file);
-            if(!Files.isDirectory(path)){
+            if(Files.exists(path) && Files.isReadable(path) && !Files.isDirectory(path)){
                 try(BufferedWriter bw = new BufferedWriter(new FileWriter(redirectionFile));
                 BufferedReader br = new BufferedReader(new FileReader(String.valueOf(path)))){
                     String line;
