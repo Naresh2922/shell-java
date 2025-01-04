@@ -234,7 +234,7 @@ public class Main {
     private static int executeCommand(String[] arguments, String redirectionFile){
         if(!redirectionFile.isEmpty()){
             List<String> files = new ArrayList<>();
-            try(DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(redirectionFile))){
+            try(DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(arguments[1]))){
                 for(Path entry : directoryStream){
                    files.add(entry.getFileName().toString());
                 }
