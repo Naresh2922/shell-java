@@ -79,16 +79,18 @@ public class Main {
 
     private static List<String> getTokens(String inputString){
         char quote = '-';
-        List<Character> escapes = Arrays.asList('\'', '\"', '$', '`', ' ');
+        List<Character> escapes = Arrays.asList('\'', '\"', '$', '`', ' ', '\\');
         List<String> tokens = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         boolean inQuote = false;
         for (int i = 0; i < inputString.length(); i++) {
             char character = inputString.charAt(i);
             if('\\' == character ){
-                if(escapes.contains(inputString.charAt(++i))){
+                if((++i < inputString.length()) && escapes.contains(character = inputString.charAt(i))){
+                    sb.append(character);
                     continue;
                 } else {
+                    sb.append('\\');
                     sb.append(character);
                 }
             } else if (character == quote) {
