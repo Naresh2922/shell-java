@@ -68,7 +68,7 @@ public class Main {
                         String filePath = isFileExecutable(command, directories);
                         if(filePath.isEmpty()) System.err.println(command + ": command not found");
                         else {
-                            String[] argument = getTokens(arguments).toArray(new String[0]);
+                            String[] argument = arguments.split(" ");
                             String[] commandWithArguments = new String[argument.length + 1];
                             commandWithArguments[0] = command;
                             System.arraycopy(argument, 0, commandWithArguments, 1, argument.length);
@@ -229,10 +229,6 @@ public class Main {
             });
 
             int exit = process.waitFor();
-            //boolean terminated = executorService.awaitTermination(30, TimeUnit.SECONDS);
-            //if(!terminated){
-            //    executorService.shutdown();
-            //}
             executorService.shutdown();
             return exit;
 
