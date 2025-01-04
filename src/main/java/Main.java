@@ -198,7 +198,7 @@ public class Main {
             if(!Files.exists(Paths.get(s)) && !Files.isDirectory(Paths.get(s))) continue;
             try(Stream<Path> files = Files.walk(Paths.get(s))){
                 boolean fileFound = files.map(filePath -> filePath.getFileName())
-                                        .anyMatch(fileName -> fileName != null && fileName.toString().equals(command));
+                                        .anyMatch(fileName -> fileName != null && fileName.toString().equals(command.trim()));
                 if(fileFound) {
                     return (s + (System.getProperty("os.name").toLowerCase().contains("win") ? "\\" : "/") + command);
                 }
