@@ -34,7 +34,7 @@ public class Main {
                 String input = scanner.nextLine().trim();
                 String[] inputArray = input.split("\\s+", 2);
                 String command = inputArray[0].trim();
-                String arguments = inputArray.length > 1 ? inputArray[1] : "";
+                String arguments = inputArray.length > 1 ? inputArray[1].trim() : "";
                 switch(command){
                     case "exit" : 
                         exit(arguments);
@@ -228,7 +228,7 @@ public class Main {
                 }
             });
 
-            process.waitFor();
+            int exit = process.waitFor();
             //boolean terminated = executorService.awaitTermination(30, TimeUnit.SECONDS);
             //if(!terminated){
             //    executorService.shutdown();
