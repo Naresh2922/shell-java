@@ -3,6 +3,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -73,9 +74,9 @@ public class Main {
                             commandWithArguments[0] = command;
                             System.arraycopy(argument, 0, commandWithArguments, 1, argument.length);
                             int exitCode = executeCommand(commandWithArguments);
-                            break;
-                        }
 
+                        }
+                        break;
                 }
             }
         }
@@ -207,6 +208,8 @@ public class Main {
 
             Process process = Runtime.getRuntime().exec(arguments);
 
+            CountDownLatch countDown = new CountDownLatch(2);
+
             executorService.submit(() -> {
                 try(BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()))){
                     String line;
@@ -215,6 +218,8 @@ public class Main {
                     }
                 } catch (IOException io){
                     io.printStackTrace();
+                } finally {
+                    countDown.countDown();
                 }
             });
 
@@ -226,9 +231,12 @@ public class Main {
                     }
                 } catch (IOException io){
                     io.printStackTrace();
+                } finally {
+                    countDown.countDown();
                 }
             });
 
+            countDown.await();
             int exit = process.waitFor();
             executorService.shutdown();
             return exit;
