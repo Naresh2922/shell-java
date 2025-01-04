@@ -61,7 +61,7 @@ public class Main {
                                                                     .map(String::trim)
                                                                     .filter(s -> !s.isEmpty())
                                                                     .toList();
-                        files.forEach(System.out::println);
+                        //files.forEach(System.out::println);
                         printContent(files);
                         break;
                     default :
