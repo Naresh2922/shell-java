@@ -73,9 +73,9 @@ public class Main {
                             commandWithArguments[0] = command;
                             System.arraycopy(argument, 0, commandWithArguments, 1, argument.length);
                             int exitCode = executeCommand(commandWithArguments);
-                            System.out.print(exitCode);
+                            break;
                         }
-                        break;
+
                 }
             }
         }
