@@ -6,7 +6,6 @@ import java.util.Scanner;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -92,7 +91,7 @@ public class Main {
             char character = inputString.charAt(i);
             if('\\' == character ){
                 if((++i < inputString.length()) && escapes.contains(character = inputString.charAt(i))){
-                    if(inQuote && (quote == '\'' || quote == '\"')){
+                    if(inQuote && (quote == '\'')){
                         sb.append('\\');
                         if(quote != character) sb.append(character);
                         continue;
