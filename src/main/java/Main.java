@@ -10,12 +10,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.nio.file.Paths;
 import java.nio.file.Path;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 
 public class Main {
@@ -36,31 +34,14 @@ public class Main {
                 String input = scanner.nextLine().trim();
                 String[] inputArray = input.split("\\s+", 2);
                 String command = inputArray[0].trim();
-                String arguments = inputArray.length > 1 ? inputArray[1].trim() : ""; 
+                String arguments = inputArray.length > 1 ? inputArray[1] : "";
                 switch(command){
                     case "exit" : 
                         exit(arguments);
                         break;
                     case "echo" : {
-                        String reg = null;
-                        arguments = arguments.replace("\\n", "\n");
-                        arguments = arguments.replace("\\t", "\t");
-                        arguments = arguments.replace("\\\\", "\\");
-                        if(arguments.startsWith("\"")){
-                            reg = "\"";
-                        } else if (arguments.startsWith("\'")) {
-                            reg = "\'";
-                        } else {
-                            String string = Arrays.stream(arguments.split("\\s+")).collect(Collectors.joining(" "));
-                            while(string.contains("\\ ")){
-                                string = string.replace("\\ ", " ");
-                            }
-                            System.out.println(string);
-                            break;
-                        }
-                        System.out.println(Arrays.stream(arguments.split(reg))
-                                                     .filter(s -> !s.trim().isEmpty())
-                                                     .collect(Collectors.joining(" ")));
+                        getTokens(arguments).forEach(System.out::print);
+                        System.out.println();
                         break;
                     }
                     case "type" :
@@ -73,26 +54,16 @@ public class Main {
                         cd(arguments);
                         break;
                     case "cat" :
-                        List<String> files = new ArrayList<>();
-                        String reg = null;
-                        if(arguments.contains("\"")){
-                             reg = "\"";
-                        } else if(arguments.contains("\'")){
-                            reg = "\'";
-                        } else {
-                            Arrays.stream(arguments.split(" ")).forEach(f -> files.add(f));
-                            printContent(files);
-                            break;
-                        }
-                        files.addAll(Arrays.stream(arguments.split(reg))
-                                                                .map(s -> s.trim())
-                                                                .filter(s -> !s.isEmpty())                                         
-                                                                .collect(Collectors.toList()));
+                        List<String> files = (getTokens(arguments)).stream()
+                                                                    .map(String::trim)
+                                                                    .filter(s -> !s.isEmpty())
+                                                                    .toList();
+                        files.forEach(System.out::println);
                         printContent(files);
                         break;
                     default :
                         String filePath = isFileExecutable(command, directories);
-                        if(filePath.equals("")) System.err.println(command + ": command not found");
+                        if(filePath.isEmpty()) System.err.println(command + ": command not found");
                         else {
                             String[] argument = arguments.split(" ");
                             String[] commandWithArguments = new String[argument.length + 1];
@@ -102,69 +73,99 @@ public class Main {
                         }
                         break;
                 }
-            }         
-        }       
+            }
+        }
+    }
+
+    private static List<String> getTokens(String inputString){
+        char quote = '-';
+        List<Character> escapes = Arrays.asList('\'', '\"', '$', '`', ' ');
+        List<String> tokens = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        boolean inQuote = false;
+        for (int i = 0; i < inputString.length(); i++) {
+            char character = inputString.charAt(i);
+            if('\\' == character ){
+                if(escapes.contains(inputString.charAt(++i))){
+                    continue;
+                } else {
+                    sb.append(character);
+                }
+            } else if (character == quote) {
+                tokens.add(sb.toString());
+                sb.setLength(0);
+                quote = '-';
+                inQuote = false;
+            } else if (!inQuote && (character == '\'' || character == '\"') ) {
+                quote = character;
+                inQuote = true;
+            }  else {
+                sb.append(character);
+            }
+        }
+        if (!sb.isEmpty()) tokens.add(sb.toString());
+        return tokens;
     }
 
 
     private static void type(String arguments, String[] directories){
-        if(arguments.equals("")) return;
-            if(commandList.contains(arguments)){
-                System.out.println(arguments + " is a shell builtin");
-                return;
-            }
+        if(arguments.isEmpty()) return;
+        if(commandList.contains(arguments)){
+            System.out.println(arguments + " is a shell builtin");
+            return;
+        }
         String filePath = isFileExecutable(arguments, directories);
-        if(filePath.equals("")) System.out.println(arguments + ": not found");
+        if(filePath.isEmpty()) System.out.println(arguments + ": not found");
         else System.out.println(arguments + " is " + filePath);
     }
 
     private static void exit(String arguments) {
-        if(!arguments.equals("")){
+        if(!arguments.isEmpty()){
             try{
                 if(Integer.parseInt(arguments) == 0){
                     System.exit(0);
                 }
             } catch (NumberFormatException nfe){
-                System.err.println("Expected format -- exit <integer> :" + nfe.getMessage());
+                System.err.println("Usage -- exit <integer> :" + nfe.getMessage());
             }
-            
+
         } else {
-            System.err.println("Expected format -- exit <integer> -- exit 0 for termination");
+            System.err.println("Usage -- exit <integer> -- exit 0 for termination");
         }
     }
 
     private static void cd(String arguments) {
         if(arguments.equals("/") || arguments.equals("")) return;
-            String[] arrayArguments = arguments.split(" ");
-            for(String arg : arrayArguments){
-                if(arg.matches("^(\\.\\./)+$")) {
-                    int count = (int) arg.chars().filter(c -> c == '/').count();
-                    while(count != 0){
-                        Main.pseudoDirectory = Main.pseudoDirectory.getParentFile();
-                        count--;
-                    }                             
-                } else if (arg.startsWith("./")){
-                    try{
-                        Main.pseudoDirectory = new File(Main.pseudoDirectory.getAbsolutePath() + "//" + arg).getCanonicalFile();
-                    } catch (IOException io) {
-                        io.printStackTrace();
-                    }                   
-                } else if (arg.equals("~")){
-                    Main.pseudoDirectory = new File(Main.home);
-                } else if (arg.matches("/[^/]+")) {
-                    if(Files.exists(Paths.get(arg)) && Files.isDirectory(Paths.get(arg))){
-                        Main.pseudoDirectory = new File(arg);
-                    } else {
-                        System.out.println("cd: "+ arg + ": No such file or directory");
-                    }
+        String[] arrayArguments = arguments.split(" ");
+        for(String arg : arrayArguments){
+            if(arg.matches("^(\\.\\./)+$")) {
+                int count = (int) arg.chars().filter(c -> c == '/').count();
+                while(count != 0){
+                    Main.pseudoDirectory = Main.pseudoDirectory.getParentFile();
+                    count--;
+                }
+            } else if (arg.startsWith("./")){
+                try{
+                    Main.pseudoDirectory = new File(Main.pseudoDirectory.getAbsolutePath() + "//" + arg).getCanonicalFile();
+                } catch (IOException io) {
+                    io.printStackTrace();
+                }
+            } else if (arg.equals("~")){
+                Main.pseudoDirectory = new File(Main.home);
+            } else if (arg.matches("/[^/]+")) {
+                if(Files.exists(Paths.get(arg)) && Files.isDirectory(Paths.get(arg))){
+                    Main.pseudoDirectory = new File(arg);
                 } else {
-                    if(Files.exists(Paths.get(arg)) && Files.isDirectory(Paths.get(arg))){
-                        pseudoDirectory = new File(arg);
-                    } else {
-                        System.out.println("cd: "+ arg + ": No such file or directory");
-                    }
+                    System.out.println("cd: "+ arg + ": No such file or directory");
+                }
+            } else {
+                if(Files.exists(Paths.get(arg)) && Files.isDirectory(Paths.get(arg))){
+                    pseudoDirectory = new File(arg);
+                } else {
+                    System.out.println("cd: "+ arg + ": No such file or directory");
                 }
             }
+        }
     }
 
     private static String isFileExecutable(String arguments, String[] directories){
@@ -177,7 +178,7 @@ public class Main {
                     return (s + (System.getProperty("os.name").toLowerCase().contains("win") ? "\\" : "/") + arguments);
                 }
             } catch (IOException io){
-                System.err.println("Exception occured while iterating through directories " + io.getMessage());
+                System.err.println("Exception occurred while iterating through directories " + io.getMessage());
                 io.printStackTrace();
             }
         }
@@ -213,8 +214,15 @@ public class Main {
             });
 
             process.waitFor();
+            boolean terminated = executorService.awaitTermination(30, TimeUnit.SECONDS);
+            if(!terminated){
+                System.err.println("Process not terminated in given time. Shutting down forcefully");
+                executorService.shutdown();
+            } else {
+                System.out.println("Process terminated successfully.");
+            }
             executorService.shutdown();
-            executorService.awaitTermination(30, TimeUnit.SECONDS);
+
         } catch (InterruptedException | IOException ioe) {
             System.err.println("process Interrupted : " + ioe.getMessage());
             ioe.printStackTrace();
@@ -229,8 +237,6 @@ public class Main {
                     while((line = br.readLine()) != null){
                         System.out.print(line);
                     }
-                } catch (FileNotFoundException fnf){
-                    fnf.printStackTrace();
                 } catch (IOException io){
                     io.printStackTrace();
                 }
