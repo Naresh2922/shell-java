@@ -236,7 +236,7 @@ public class Main {
             List<String> files = new ArrayList<>();
             try(DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(arguments[1]))){
                 for(Path entry : directoryStream){
-                   files.add(arguments[1] + entry.getFileName().toString());
+                   files.add(arguments[1] + "\\" + entry.getFileName().toString());
                 }
                 handleRedirection(files, redirectionFile, arguments[0]);
             } catch (IOException io){
