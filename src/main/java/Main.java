@@ -37,7 +37,7 @@ public class Main {
                 String arguments = null;
                 if(input.startsWith("'") || input.startsWith("\"")){
                     char c = input.charAt(0);
-                    command = input.substring(0, input.indexOf(c, 1) + 1);
+                    command = input.substring(1, input.indexOf(c, 1));
                     arguments = input.substring(input.indexOf(c, 1) + 1).trim();
                 } else{
                     inputArray = input.split("\\s+", 2);
@@ -197,10 +197,6 @@ public class Main {
         for(String s : directories){
             if(!Files.exists(Paths.get(s)) && !Files.isDirectory(Paths.get(s))) continue;
             try(Stream<Path> files = Files.walk(Paths.get(s))){
-
-                files.forEach(filePath -> {
-                    System.out.println("Found file: " + filePath.getFileName());
-                });
                 boolean fileFound = files.map(filePath -> filePath.getFileName())
                                         .anyMatch(fileName -> fileName != null && fileName.toString().equals(command));
                 if(fileFound) {
