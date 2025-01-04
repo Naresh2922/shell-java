@@ -314,7 +314,7 @@ public class Main {
                     try(BufferedReader br = new BufferedReader(new FileReader(String.valueOf(path)))){
                         String line;
                         while((line = br.readLine()) != null){
-                            bw.write(line);
+                            bw.write(line + "\n");
                         }
                     } catch (IOException io){
                         io.printStackTrace();
