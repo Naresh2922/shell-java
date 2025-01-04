@@ -39,9 +39,6 @@ public class Main {
                     char c = input.charAt(0);
                     command = input.substring(0, input.indexOf(c, 1) + 1);
                     arguments = input.substring(input.indexOf(c, 1) + 1).trim();
-                    System.out.println(command);
-                    System.out.println(arguments);
-                    continue;
                 } else{
                     inputArray = input.split("\\s+", 2);
                     command = inputArray[0].trim();
