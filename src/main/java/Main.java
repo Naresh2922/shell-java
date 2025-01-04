@@ -238,6 +238,7 @@ public class Main {
                 for(Path entry : directoryStream){
                    files.add(arguments[1] + "/" + entry.getFileName().toString());
                 }
+                files.sort(String::compareTo);
                 handleRedirection(files, redirectionFile, arguments[0]);
             } catch (IOException io){
                 io.printStackTrace();
