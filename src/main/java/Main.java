@@ -32,9 +32,21 @@ public class Main {
             while(true){
                 System.out.print("$ ");
                 String input = scanner.nextLine().trim();
-                String[] inputArray = input.split("\\s+", 2);
-                String command = inputArray[0].trim();
-                String arguments = inputArray.length > 1 ? inputArray[1].trim() : "";
+                String[] inputArray = null;
+                String command = null;
+                String arguments = null;
+                if(input.startsWith("'") || input.startsWith("\"")){
+                    char c = input.charAt(0);
+                    command = input.substring(0, input.indexOf(c, 1) + 1);
+                    arguments = input.substring(input.indexOf(c, 1) + 1).trim();
+                    System.out.println(command);
+                    System.out.println(arguments);
+                    continue;
+                } else{
+                    inputArray = input.split("\\s+", 2);
+                    command = inputArray[0].trim();
+                    arguments = inputArray.length > 1 ? inputArray[1].trim() : "";
+                }
                 switch(command){
                     case "exit" : 
                         exit(arguments);
