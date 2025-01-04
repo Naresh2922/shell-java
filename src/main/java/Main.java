@@ -54,10 +54,14 @@ public class Main {
                         cd(arguments);
                         break;
                     case "cat" :
-                        List<String> files = (getTokens(arguments)).stream()
+                        String reg =  null;
+                        if(arguments.startsWith("\"")) reg = "\"";
+                        else reg = "'";
+                        List<String> files = Arrays.stream(arguments.split(reg))
                                                                     .map(String::trim)
                                                                     .filter(s -> !s.isEmpty())
                                                                     .toList();
+                        files.forEach(System.out::println);
                         printContent(files);
                         break;
                     default :
