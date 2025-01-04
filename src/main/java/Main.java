@@ -40,8 +40,8 @@ public class Main {
                         exit(arguments);
                         break;
                     case "echo" : {
-                        getTokens(arguments).forEach(System.out::print);
-                        System.out.println();
+                        List<String> tokens  = getTokens(arguments);
+                        System.out.println(String.join("", tokens));
                         break;
                     }
                     case "type" :
@@ -90,6 +90,11 @@ public class Main {
             char character = inputString.charAt(i);
             if('\\' == character ){
                 if((++i < inputString.length()) && escapes.contains(character = inputString.charAt(i))){
+                    if((character == '\'' || character == '\"') && inQuote){
+                        sb.append('\\');
+                        sb.append(character);
+                        continue;
+                    }
                     sb.append(character);
                     continue;
                 } else {
@@ -104,7 +109,13 @@ public class Main {
             } else if (!inQuote && (character == '\'' || character == '\"') ) {
                 quote = character;
                 inQuote = true;
-            }  else {
+            } else if (character == ' ' && !inQuote){
+                while((++i < inputString.length()) && (character = inputString.charAt(i)) == ' '){
+                    continue;
+                }
+                --i;
+                sb.append(' ');
+            } else {
                 sb.append(character);
             }
         }
