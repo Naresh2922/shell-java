@@ -90,13 +90,12 @@ public class Main {
             char character = inputString.charAt(i);
             if('\\' == character ){
                 if((++i < inputString.length()) && escapes.contains(character = inputString.charAt(i))){
-                    if((character == '\'' || character == '\"') && inQuote){
+                    if(inQuote && (quote == '\'' || quote == '\"')){
                         sb.append('\\');
-                        sb.append(character);
+                        if(quote != character) sb.append(character);
                         continue;
                     }
                     sb.append(character);
-                    continue;
                 } else {
                     sb.append('\\');
                     sb.append(character);
