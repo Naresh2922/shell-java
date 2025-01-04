@@ -199,7 +199,7 @@ public class Main {
             try(Stream<Path> files = Files.walk(Paths.get(s))){
 
                 files.forEach(filePath -> {
-                    System.out.println("Found file: " + filePath.getFileName().toString());
+                    System.out.println("Found file: " + filePath.getFileName());
                 });
                 boolean fileFound = files.map(filePath -> filePath.getFileName())
                                         .anyMatch(fileName -> fileName != null && fileName.toString().equals(command));
