@@ -197,8 +197,12 @@ public class Main {
         for(String s : directories){
             if(!Files.exists(Paths.get(s)) && !Files.isDirectory(Paths.get(s))) continue;
             try(Stream<Path> files = Files.walk(Paths.get(s))){
+
+                files.forEach(filePath -> {
+                    System.out.println("Found file: " + filePath.getFileName().toString());
+                });
                 boolean fileFound = files.map(filePath -> filePath.getFileName())
-                                        .anyMatch(fileName -> fileName != null && fileName.toString().equals(command.trim()));
+                                        .anyMatch(fileName -> fileName != null && fileName.toString().equals(command));
                 if(fileFound) {
                     return (s + (System.getProperty("os.name").toLowerCase().contains("win") ? "\\" : "/") + command);
                 }
