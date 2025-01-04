@@ -1,3 +1,5 @@
+import java.io.*;
+import java.nio.file.DirectoryStream;
 import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
@@ -6,15 +8,10 @@ import java.util.Scanner;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.util.stream.Stream;
 import java.nio.file.Paths;
 import java.nio.file.Path;
-import java.io.File;
-import java.io.FileReader;
 
 public class Main {
     private static final Set<String> commandList = Set.of("type", "exit", "echo", "pwd", "cd");
@@ -32,9 +29,10 @@ public class Main {
             while(true){
                 System.out.print("$ ");
                 String input = scanner.nextLine().trim();
-                String[] inputArray = null;
-                String command = null;
-                String arguments = null;
+                String[] inputArray;
+                String command ;
+                String arguments;
+                String redirectionFile = "";
                 if(input.startsWith("'") || input.startsWith("\"")){
                     char c = input.charAt(0);
                     command = input.substring(1, input.indexOf(c, 1));
@@ -44,15 +42,34 @@ public class Main {
                     command = inputArray[0].trim();
                     arguments = inputArray.length > 1 ? inputArray[1].trim() : "";
                 }
+
+                if (arguments.contains(">")){
+                    String[] parts = arguments.split(">", 2);
+                    arguments = parts[0].trim();
+                    redirectionFile = parts[1].trim();
+                } else if (arguments.contains("1>")){
+                    String[] parts = arguments.split("1>", 2);
+                    arguments = parts[0].trim();
+                    redirectionFile = parts[1].trim();
+                }
+
+
                 switch(command){
                     case "exit" : 
                         exit(arguments);
                         break;
-                    case "echo" : {
+                    case "echo" :
                         List<String> tokens  = getTokens(arguments);
-                        System.out.println(String.join("", tokens));
+                        if(!redirectionFile.isEmpty()){
+                            try(BufferedWriter bw = new BufferedWriter(new FileWriter(redirectionFile))){
+                                bw.write(String.join("", tokens));
+                            } catch (IOException io){
+                                io.printStackTrace();
+                            }
+                        } else {
+                            System.out.println(String.join("", tokens));
+                        }
                         break;
-                    }
                     case "type" :
                         type(arguments, directories);
                         break;
@@ -63,6 +80,7 @@ public class Main {
                         cd(arguments);
                         break;
                     case "cat" :
+
                         String reg =  null;
                         if(arguments.startsWith("\"")) reg = "\"";
                         else reg = "'";
@@ -70,8 +88,11 @@ public class Main {
                                                                     .map(String::trim)
                                                                     .filter(s -> !s.isEmpty())
                                                                     .toList();
-                        //files.forEach(System.out::println);
-                        printContent(files);
+                        if(!redirectionFile.isEmpty()){
+                            handleRedirection(files, redirectionFile, command);
+                        } else {
+                            printContent(files);
+                        }
                         break;
                     default :
                         String filePath = isFileExecutable(command, directories);
@@ -81,7 +102,7 @@ public class Main {
                             String[] commandWithArguments = new String[argument.length + 1];
                             commandWithArguments[0] = command;
                             System.arraycopy(argument, 0, commandWithArguments, 1, argument.length);
-                            int exitCode = executeCommand(commandWithArguments);
+                            int exitCode = executeCommand(commandWithArguments, redirectionFile);
 
                         }
                         break;
@@ -210,49 +231,61 @@ public class Main {
         return "";
     }
 
-    private static int executeCommand(String[] arguments){
-        try {
-            ExecutorService executorService =  Executors.newFixedThreadPool(2);
-
-            Process process = Runtime.getRuntime().exec(arguments);
-
-            CountDownLatch countDown = new CountDownLatch(2);
-
-            executorService.submit(() -> {
-                try(BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()))){
-                    String line;
-                    while((line = br.readLine()) != null){
-                        System.out.println(line);
-                    }
-                } catch (IOException io){
-                    io.printStackTrace();
-                } finally {
-                    countDown.countDown();
+    private static int executeCommand(String[] arguments, String redirectionFile){
+        if(!redirectionFile.isEmpty()){
+            List<String> files = new ArrayList<>();
+            try(DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(redirectionFile))){
+                for(Path entry : directoryStream){
+                   files.add(entry.getFileName().toString());
                 }
-            });
+                handleRedirection(files, redirectionFile, arguments[0]);
+            } catch (IOException io){
+                io.printStackTrace();
+            }
+        } else {
+            try {
+                ExecutorService executorService =  Executors.newFixedThreadPool(2);
 
-            executorService.submit(() -> {
-                try(BufferedReader br = new BufferedReader(new InputStreamReader(process.getErrorStream()))){
-                    String line;
-                    while((line = br.readLine()) != null){
-                        System.out.println(line);
+                Process process = Runtime.getRuntime().exec(arguments);
+
+                CountDownLatch countDown = new CountDownLatch(2);
+
+                executorService.submit(() -> {
+                    try(BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()))){
+                        String line;
+                        while((line = br.readLine()) != null){
+                            System.out.println(line);
+                        }
+                    } catch (IOException io){
+                        io.printStackTrace();
+                    } finally {
+                        countDown.countDown();
                     }
-                } catch (IOException io){
-                    io.printStackTrace();
-                } finally {
-                    countDown.countDown();
-                }
-            });
+                });
 
-            countDown.await();
-            int exit = process.waitFor();
-            executorService.shutdown();
-            return exit;
+                executorService.submit(() -> {
+                    try(BufferedReader br = new BufferedReader(new InputStreamReader(process.getErrorStream()))){
+                        String line;
+                        while((line = br.readLine()) != null){
+                            System.out.println(line);
+                        }
+                    } catch (IOException io){
+                        io.printStackTrace();
+                    } finally {
+                        countDown.countDown();
+                    }
+                });
+
+                countDown.await();
+                int exit = process.waitFor();
+                executorService.shutdown();
+                return exit;
 
 
-        } catch (InterruptedException | IOException ioe) {
-            System.err.println("process Interrupted : " + ioe.getMessage());
-            ioe.printStackTrace();
+            } catch (InterruptedException | IOException ioe) {
+                System.err.println("process Interrupted : " + ioe.getMessage());
+                ioe.printStackTrace();
+            }
         }
         return 0;
     }
@@ -272,4 +305,24 @@ public class Main {
         });
         System.out.println();
     }
+
+    private static void handleRedirection(List<String> files, String redirectionFile, String command){
+        files.forEach(file -> {
+            Path path = Paths.get(file);
+            if(Files.exists(path) && Files.isReadable(path) && Files.isRegularFile(path)){
+                try(BufferedWriter bw = new BufferedWriter(new FileWriter(redirectionFile));
+                BufferedReader br = new BufferedReader(new FileReader(String.valueOf(path)))){
+                    String line;
+                    while((line = br.readLine()) != null){
+                        bw.write(line);
+                    }
+                } catch (IOException io){
+                    io.printStackTrace();
+                }
+            } else {
+                System.err.println(command + ": " + file + ": No such file or directory");
+            }
+        });
+    }
 }
+
