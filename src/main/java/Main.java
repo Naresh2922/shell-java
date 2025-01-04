@@ -312,7 +312,6 @@ public class Main {
                     String line;
                     while((line = br.readLine()) != null){
                         bw.write(line);
-                        bw.newLine();
                     }
                 } catch (IOException io){
                     io.printStackTrace();
