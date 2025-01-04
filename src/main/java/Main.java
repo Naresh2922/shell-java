@@ -309,7 +309,7 @@ public class Main {
     private static void handleRedirection(List<String> files, String redirectionFile, String command){
         files.forEach(file -> {
             Path path = Paths.get(file);
-            if(Files.exists(path) && Files.isReadable(path) && Files.isRegularFile(path)){
+            if(Files.exists(path) && Files.isReadable(path) && !Files.isDirectory(path)){
                 try(BufferedWriter bw = new BufferedWriter(new FileWriter(redirectionFile));
                 BufferedReader br = new BufferedReader(new FileReader(String.valueOf(path)))){
                     String line;
