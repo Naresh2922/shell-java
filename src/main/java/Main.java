@@ -230,11 +230,12 @@ public class Main {
             });
 
             process.waitFor();
-            boolean terminated = executorService.awaitTermination(30, TimeUnit.SECONDS);
-            if(!terminated){
-                executorService.shutdown();
-            }
+            //boolean terminated = executorService.awaitTermination(30, TimeUnit.SECONDS);
+            //if(!terminated){
+            //    executorService.shutdown();
+            //}
             executorService.shutdown();
+
 
         } catch (InterruptedException | IOException ioe) {
             System.err.println("process Interrupted : " + ioe.getMessage());
