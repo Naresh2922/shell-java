@@ -24,6 +24,8 @@ public class Main {
         try(Scanner scanner = new Scanner(System.in)){
             while(true){
                 System.out.print("$ ");
+                System.setOut(System.out);
+                System.setErr(System.err);
                 String input = scanner.nextLine().trim();
                 String[] inputArray;
                 String command ;
@@ -39,14 +41,17 @@ public class Main {
                     arguments = inputArray.length > 1 ? inputArray[1].trim() : "";
                 }
 
+                String redirectOperator = "";
                 if (arguments.contains(">")){
                     String[] parts = arguments.split(">", 2);
                     arguments = parts[0].trim();
                     redirectionFile = parts[1].trim();
+                    redirectOperator = ">";
                 } else if (arguments.contains("1>")){
                     String[] parts = arguments.split("1>", 2);
                     arguments = parts[0].trim();
                     redirectionFile = parts[1].trim();
+                    redirectOperator = "1>";
                 }
 
 
@@ -56,12 +61,8 @@ public class Main {
                         break;
                     case "echo" :
                         List<String> tokens  = getTokens(arguments);
-                        if(!redirectionFile.isEmpty()){
-                            try(BufferedWriter bw = new BufferedWriter(new FileWriter(redirectionFile))){
-                                bw.write(String.join("", tokens));
-                            } catch (IOException io){
-                                io.printStackTrace();
-                            }
+                        if(!redirectOperator.isBlank()){
+                            boolean bol = handleRedirection(redirectionFile, redirectOperator)
                         } else {
                             System.out.println(String.join("", tokens));
                         }
@@ -75,21 +76,6 @@ public class Main {
                     case "cd" :
                         cd(arguments);
                         break;
-                    case "cat" :
-
-                        String reg =  null;
-                        if(arguments.startsWith("\"")) reg = "\"";
-                        else reg = "'";
-                        List<String> files = Arrays.stream(arguments.split(reg))
-                                                                    .map(String::trim)
-                                                                    .filter(s -> !s.isEmpty())
-                                                                    .toList();
-                        if(!redirectionFile.isEmpty()){
-                            handleRedirection(files, redirectionFile, command);
-                        } else {
-                            printContent(files);
-                        }
-                        break;
                     default :
                         String filePath = isFileExecutable(command, directories);
                         if(filePath.isEmpty()) System.err.println(command + ": command not found");
@@ -98,7 +84,10 @@ public class Main {
                             String[] commandWithArguments = new String[argument.length + 1];
                             commandWithArguments[0] = command;
                             System.arraycopy(argument, 0, commandWithArguments, 1, argument.length);
-                            int exitCode = executeCommand(commandWithArguments, redirectionFile);
+                            if(!redirectOperator.isBlank()) {
+                                boolean bol = handleRedirection(redirectionFile, redirectOperator);
+                            }
+                            int exitCode = executeCommand(commandWithArguments);
 
                         }
                         break;
@@ -227,45 +216,58 @@ public class Main {
         return "";
     }
 
-    private static int executeCommand(String[] arguments, String redirectionFile){
-        if(!redirectionFile.isEmpty()){
-            List<String> files = new ArrayList<>();
-            try(DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(arguments[1]))){
-                for(Path entry : directoryStream){
-                   files.add(arguments[1] + "/" + entry.getFileName().toString());
-                }
-                files.sort(Collections.reverseOrder());
-                handleRedirection(files, redirectionFile, arguments[0]);
-            } catch (IOException io){
-                io.printStackTrace();
-            }
-        } else {
+    private static boolean handleRedirection(String redirectionFile, String redirectOperator) {
+        if(redirectOperator.equals(">") || redirectOperator.equals("1>")){
             try {
+                System.setOut(new PrintStream(new FileOutputStream(redirectionFile)));
+            } catch (FileNotFoundException fnf) {
+                fnf.printStackTrace();
+            }
+        } else if (redirectOperator.equals("2>")){
+            try {
+                System.setErr(new PrintStream(new FileOutputStream(redirectionFile)));
+            } catch (FileNotFoundException fnf) {
+                fnf.printStackTrace();
+            }
+        }
+        return true;
+    }
+
+    private static int executeCommand(String[] arguments) throws FileNotFoundException {
+
+        try {
                 ExecutorService executorService =  Executors.newFixedThreadPool(2);
 
                 Process process = Runtime.getRuntime().exec(arguments);
 
-                CountDownLatch countDown = new CountDownLatch(2);
+                CountDownLatch countDown = new CountDownLatch(1);
 
                 executorService.submit(() -> {
-                    try(BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()))){
+                    try(BufferedReader bout = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                        BufferedReader berr = new BufferedReader(new InputStreamReader(process.getErrorStream()))){
+                        StringBuilder sbOut = new StringBuilder();
+                        StringBuilder sbErr = new StringBuilder();
+                        boolean firstLine = true;
                         String line;
-                        while((line = br.readLine()) != null){
-                            System.out.println(line);
-                        }
-                    } catch (IOException io){
-                        io.printStackTrace();
-                    } finally {
-                        countDown.countDown();
-                    }
-                });
+                        while((line = bout.readLine()) != null){
+                            if(!firstLine){
+                                sbOut.append(System.lineSeparator());
+                            }
+                            sbOut.append(line);
+                            firstLine = false;
 
-                executorService.submit(() -> {
-                    try(BufferedReader br = new BufferedReader(new InputStreamReader(process.getErrorStream()))){
-                        String line;
-                        while((line = br.readLine()) != null){
-                            System.out.println(line);
                         }
+
+                        while((line = berr.readLine()) != null){
+                            if(!firstLine){
+                                sbErr.append(System.lineSeparator());
+                            }
+                            sbErr.append(line);
+                            firstLine = false;
+
+                        }
+                        System.out.println(sbOut.toString());
+                        System.out.println(sbErr.toString());
                     } catch (IOException io){
                         io.printStackTrace();
                     } finally {
@@ -283,7 +285,6 @@ public class Main {
                 System.err.println("process Interrupted : " + ioe.getMessage());
                 ioe.printStackTrace();
             }
-        }
         return 0;
     }
 
@@ -303,23 +304,5 @@ public class Main {
         System.out.println();
     }
 
-    private static void handleRedirection(List<String> files, String redirectionFile, String command){
-        files.forEach(file -> {
-            Path path = Paths.get(file);
-            if(Files.exists(path) && Files.isReadable(path) && !Files.isDirectory(path)){
-                try(BufferedWriter bw = new BufferedWriter(new FileWriter(redirectionFile));
-                    BufferedReader br = new BufferedReader(new FileReader(String.valueOf(path)))){
-                    String line;
-                    while((line = br.readLine()) != null){
-                        bw.write(line);
-                    }
-                } catch (IOException io){
-                    io.printStackTrace();
-                }
-            } else {
-                System.err.println(command + ": " + file + ": No such file or directory");
-            }
-        });
-    }
 }
 
