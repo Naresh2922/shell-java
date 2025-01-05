@@ -241,16 +241,13 @@ public class Main {
 
     private static int executeCommand(String[] arguments) throws FileNotFoundException {
         try {
-            ExecutorService executorService = Executors.newFixedThreadPool(2);
 
             Process process = new ProcessBuilder(arguments).start();
 
-            CountDownLatch countDown = new CountDownLatch(1); // Fixed latch count to 1
 
-            executorService.submit(() -> {
-                try (BufferedReader bout = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                     BufferedReader berr = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-                    StringBuilder sbOut = new StringBuilder();
+            try (BufferedReader bout = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                 BufferedReader berr = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                 StringBuilder sbOut = new StringBuilder();
                     StringBuilder sbErr = new StringBuilder();
                     String line;
 
@@ -268,18 +265,12 @@ public class Main {
                     System.out.println(sbErr.toString());
                 } catch (IOException io) {
                     io.printStackTrace();
-                } finally {
-                    countDown.countDown();
                 }
-            });
 
-            countDown.await();
 
             int exit = process.waitFor();
             System.setOut(System.out);
             System.setErr(System.err);
-            System.out.println("proess completed");
-            executorService.shutdown();
 
             return exit;
 
