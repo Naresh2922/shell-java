@@ -23,9 +23,9 @@ public class Main {
 
         try(Scanner scanner = new Scanner(System.in)){
             while(true){
-                System.out.print("$ ");
                 System.setOut(System.out);
                 System.setErr(System.err);
+                System.out.print("$ ");
                 String input = scanner.nextLine().trim();
                 String[] inputArray;
                 String command ;
