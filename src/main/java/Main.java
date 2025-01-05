@@ -78,10 +78,13 @@ public class Main {
                         cd(arguments);
                         break;
                     default :
+                        //getTokens(arguments).forEach(e -> System.out.println(e));
                         String filePath = isFileExecutable(command, directories);
                         if(filePath.isEmpty()) System.err.println(command + ": command not found");
                         else {
-                            String[] argument = arguments.split(" ");
+
+                            String[] argument = getTokens(arguments).toArray(new String[0]);
+
                             String[] commandWithArguments = new String[argument.length + 1];
                             commandWithArguments[0] = command;
                             System.arraycopy(argument, 0, commandWithArguments, 1, argument.length);
@@ -206,10 +209,8 @@ public class Main {
         for(String s : directories){
             if(!Files.exists(Paths.get(s)) && !Files.isDirectory(Paths.get(s))) continue;
             try(Stream<Path> files = Files.walk(Paths.get(s))){
-                files.forEach(e -> System.out.println(e.getFileName()));
-                boolean fileFound = false;
-                        //files.map(filePath -> filePath.getFileName())
-                                       // .anyMatch(fileName -> fileName != null && fileName.toString().equals(command));
+                boolean fileFound = files.map(filePath -> filePath.getFileName())
+                                       .anyMatch(fileName -> fileName != null && fileName.toString().equals(command));
                 if(fileFound) {
                     return (s + (System.getProperty("os.name").toLowerCase().contains("win") ? "\\" : "/") + command);
                 }
@@ -242,7 +243,7 @@ public class Main {
         try {
             ExecutorService executorService = Executors.newFixedThreadPool(2);
 
-            Process process = Runtime.getRuntime().exec(arguments);
+            Process process = new ProcessBuilder(arguments).start();
 
             CountDownLatch countDown = new CountDownLatch(1); // Fixed latch count to 1
 
