@@ -46,7 +46,17 @@ public class Main {
                     arguments = parts[0].trim();
                     redirectionFile = parts[1].trim();
                     redirectOperator = "2>";
-                } else if (arguments.contains("1>")) {
+                } else if (arguments.contains("1>>")) {
+                    String[] parts = arguments.split("1>>", 2);
+                    arguments = parts[0].trim();
+                    redirectionFile = parts[1].trim();
+                    redirectOperator = "1>>";
+                }else if (arguments.contains(">>")) {
+                    String[] parts = arguments.split(">>", 2);
+                    arguments = parts[0].trim();
+                    redirectionFile = parts[1].trim();
+                    redirectOperator = ">>";
+                }  else if (arguments.contains("1>")) {
                     String[] parts = arguments.split("1>", 2);
                     arguments = parts[0].trim();
                     redirectionFile = parts[1].trim();
@@ -234,7 +244,7 @@ public class Main {
             
 
             if (!redirectOperator.isBlank()) {
-                if (redirectOperator.equals(">") || redirectOperator.equals("1>")) {
+                if (redirectOperator.equals(">") || redirectOperator.equals("1>") || redirectOperator.equals("1>>") ||  redirectOperator.equals(">>")) {
                     processBuilder.redirectOutput(new File(redirectionFile));
                     processBuilder.redirectError(ProcessBuilder.Redirect.INHERIT); 
                 } else if (redirectOperator.equals("2>")) {
