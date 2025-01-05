@@ -275,6 +275,7 @@ public class Main {
             int exit = process.waitFor();
             System.setOut(System.out);
             System.setErr(System.err);
+            System.out.println("proess completed");
             executorService.shutdown();
 
             return exit;
