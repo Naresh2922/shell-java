@@ -41,7 +41,7 @@ public class Main {
                     arguments = inputArray.length > 1 ? inputArray[1].trim() : "";
                 }
 
-                String[] operators = {"2>", "1>>", ">>", "1>", ">"};
+                String[] operators = {"2>>", "2>", "1>>", ">>", "1>", ">"};
                 for (String op : operators) {
                     if (arguments.contains(op)) {
                         String[] parts = arguments.split(op, 2);
@@ -137,9 +137,6 @@ public class Main {
             String[] commandWithArguments = new String[argument.length + 1];
             commandWithArguments[0] = command;
             System.arraycopy(argument, 0, commandWithArguments, 1, argument.length);
-            //if (!redirectOperator.isBlank()) {
-            //    handleRedirection(redirectionFile, redirectOperator);
-            //}
             int exitCode = Main.executeCommand(commandWithArguments, redirectionFile, redirectOperator);
             return exitCode;
         }
