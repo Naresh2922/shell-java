@@ -62,10 +62,9 @@ public class Main {
                     case "echo" :
                         List<String> tokens  = getTokens(arguments);
                         if(!redirectOperator.isBlank()){
-                            boolean bol = handleRedirection(redirectionFile, redirectOperator)
-                        } else {
-                            System.out.println(String.join("", tokens));
+                            boolean bol = handleRedirection(redirectionFile, redirectOperator);
                         }
+                        System.out.println(String.join("", tokens));
                         break;
                     case "type" :
                         type(arguments, directories);
@@ -98,7 +97,7 @@ public class Main {
 
     private static List<String> getTokens(String inputString){
         char quote = '-';
-        List<Character> escapes = Arrays.asList('\'', '\"', '$', '`', ' ', '\\', 'n');
+        List<Character> escapes = Arrays.asList('\"', '$', '`', ' ', '\\', 'n');
         List<String> tokens = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         boolean inQuote = false;
@@ -112,7 +111,9 @@ public class Main {
                         continue;
                     }
                     sb.append(character);
-                } else {
+                } else if (!inQuote){
+                    sb.append(character);
+                }else {
                     sb.append('\\');
                     sb.append(character);
                 }
