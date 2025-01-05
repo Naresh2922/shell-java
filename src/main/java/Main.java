@@ -65,6 +65,8 @@ public class Main {
                             boolean bol = handleRedirection(redirectionFile, redirectOperator);
                         }
                         System.out.println(String.join("", tokens));
+                        System.setOut(System.out);
+                        System.setErr(System.err);
                         break;
                     case "type" :
                         type(arguments, directories);
@@ -273,12 +275,15 @@ public class Main {
             int exit = process.waitFor();
             executorService.shutdown();
 
+            System.setOut(System.out);
+            System.setErr(System.err);
+
             return exit;
 
         } catch (InterruptedException | IOException ioe) {
             System.err.println("Process interrupted: " + ioe.getMessage());
             ioe.printStackTrace();
-            throw new RuntimeException(ioe); 
+            throw new RuntimeException(ioe);
         }
     }
 
