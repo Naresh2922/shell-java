@@ -132,8 +132,7 @@ public class Main {
     }
 
     private static int executeNonBuiltInCommand(String command, String[] directories, String arguments, String redirectOperator, String redirectionFile) throws FileNotFoundException{
-        String filePath = "huhuh";
-        //isFileExecutable(command, directories);
+        String filePath = isFileExecutable(command, directories);
         if(filePath.isEmpty()) {
             System.err.println(command + ": command not found");
             return -1;
@@ -277,7 +276,7 @@ public class Main {
 
             return exitCode;
         } catch (IOException | InterruptedException e) {
-            System.err.println("Error during command execution: " + e.getMessage());
+            System.err.println(arguments[0] + ": command not found");
             return -1;
         }
     }
