@@ -42,7 +42,7 @@ public class Main {
                 }
 
                 if (arguments.contains("2>")) {
-                    String[] parts = arguments.split(">", 2);
+                    String[] parts = arguments.split("2>", 2);
                     arguments = parts[0].trim();
                     redirectionFile = parts[1].trim();
                     redirectOperator = "2>";
