@@ -240,7 +240,8 @@ public class Main {
 
             if (!redirectOperator.isBlank()) {
                 if (redirectOperator.equals(">") || redirectOperator.equals("1>")) {
-                    processBuilder.redirectOutput(new File(redirectionFile)); 
+                    processBuilder.redirectOutput(new File(redirectionFile));
+                    processBuilder.redirectError(ProcessBuilder.Redirect.INHERIT); 
                 } else if (redirectOperator.equals("2>")) {
                     processBuilder.redirectError(new File(redirectionFile)); 
                 }
