@@ -67,7 +67,7 @@ public class Main {
                     case "echo":
                         List<String> tokens = getTokens(arguments);
                         if(!redirectOperator.isBlank()){
-                            handleRedirection(redirectionFile, redirectOperator);
+                            executeNonBuiltInCommand(command, directories, arguments, redirectOperator, redirectionFile);
                         }
                         System.out.println(String.join("", tokens));
                         System.setOut(System.out);
@@ -83,20 +83,7 @@ public class Main {
                         cd(arguments);
                         break;
                     default:
-                        String filePath = isFileExecutable(command, directories);
-                        System.out.println(filePath);
-                        if(filePath.isEmpty()) {
-                            System.err.println(command + ": command not found");
-                        } else {
-                            String[] argument = getTokens(arguments).toArray(new String[0]);
-                            String[] commandWithArguments = new String[argument.length + 1];
-                            commandWithArguments[0] = command;
-                            System.arraycopy(argument, 0, commandWithArguments, 1, argument.length);
-                            if (!redirectOperator.isBlank()) {
-                                handleRedirection(redirectionFile, redirectOperator);
-                            }
-                            int exitCode = executeCommand(commandWithArguments, redirectionFile, redirectOperator);
-                        }
+                        executeNonBuiltInCommand(command, directories, arguments, redirectOperator, redirectionFile);
                         break;
                 }
                 System.out.print("$ ");
@@ -146,6 +133,24 @@ public class Main {
         }
         if (!sb.isEmpty()) tokens.add(sb.toString());
         return tokens;
+    }
+
+    private static int executeNonBuiltInCommand(String command, String[] directories, String arguments, String redirectOperator, String redirectionFile) throws FileNotFoundException{
+        String filePath = isFileExecutable(command, directories);
+        if(filePath.isEmpty()) {
+            System.err.println(command + ": command not found");
+            return -1;
+        } else {
+            String[] argument = getTokens(arguments).toArray(new String[0]);
+            String[] commandWithArguments = new String[argument.length + 1];
+            commandWithArguments[0] = command;
+            System.arraycopy(argument, 0, commandWithArguments, 1, argument.length);
+            //if (!redirectOperator.isBlank()) {
+            //    handleRedirection(redirectionFile, redirectOperator);
+            //}
+            int exitCode = Main.executeCommand(commandWithArguments, redirectionFile, redirectOperator);
+            return exitCode;
+        }
     }
 
     private static void type(String arguments, String[] directories){
@@ -246,9 +251,13 @@ public class Main {
             ProcessBuilder processBuilder = new ProcessBuilder(arguments);
             
             if (!redirectOperator.isBlank()) {
-                handleRedirection(redirectionFile, redirectOperator);
+                processBuilder.redirectOutput(new File(redirectionFile));
+                processBuilder.redirectError(new File(redirectionFile));
+                Process process = processBuilder.start();
+                int exitCode = process.waitFor();
+                return exitCode;
             }
-            
+
             Process process = processBuilder.start();
             
             try (BufferedReader bout = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -277,10 +286,6 @@ public class Main {
             
             int exitCode = process.waitFor();
             
-            if (!redirectOperator.isBlank()) {
-                System.setOut(System.out);
-                System.setErr(System.err);
-            }
 
             return exitCode;
         } catch (IOException | InterruptedException e) {
