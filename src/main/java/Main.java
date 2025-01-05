@@ -237,9 +237,13 @@ public class Main {
         try {
             ProcessBuilder processBuilder = new ProcessBuilder(arguments);
             
+
             if (!redirectOperator.isBlank()) {
-                processBuilder.redirectOutput(new File(redirectionFile));
-                processBuilder.redirectError(new File(redirectionFile));
+                if (redirectOperator.equals(">") || redirectOperator.equals("1>")) {
+                    processBuilder.redirectOutput(new File(redirectionFile)); 
+                } else if (redirectOperator.equals("2>")) {
+                    processBuilder.redirectError(new File(redirectionFile)); 
+                }
                 Process process = processBuilder.start();
                 int exitCode = process.waitFor();
                 return exitCode;
