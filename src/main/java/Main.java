@@ -273,10 +273,9 @@ public class Main {
             countDown.await();
 
             int exit = process.waitFor();
-            executorService.shutdown();
-
             System.setOut(System.out);
             System.setErr(System.err);
+            executorService.shutdown();
 
             return exit;
 
