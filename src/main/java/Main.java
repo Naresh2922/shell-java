@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import java.nio.file.Paths;
 import java.nio.file.Path;
 
+
 public class Main {
     private static final Set<String> commandList = Set.of("type", "exit", "echo", "pwd", "cd");
     static String path = System.getenv("PATH");
@@ -19,7 +20,6 @@ public class Main {
     public static void main(String[] args) throws Exception {
         
         String[] directories = Main.path.split(System.getProperty("os.name").toLowerCase().contains("win") ? ";" : ":");
-        
 
         try(Scanner scanner = new Scanner(System.in)){
             while(true){
@@ -28,9 +28,11 @@ public class Main {
                 System.out.print("$ ");
                 String input = scanner.nextLine().trim();
                 String[] inputArray;
-                String command ;
+                String command;
                 String arguments;
                 String redirectionFile = "";
+                String redirectOperator = "";
+                
                 if(input.startsWith("'") || input.startsWith("\"")){
                     char c = input.charAt(0);
                     command = input.substring(1, input.indexOf(c, 1));
@@ -41,58 +43,58 @@ public class Main {
                     arguments = inputArray.length > 1 ? inputArray[1].trim() : "";
                 }
 
-                String redirectOperator = "";
-                if (arguments.contains(">")){
+                if (arguments.contains(">")) {
                     String[] parts = arguments.split(">", 2);
                     arguments = parts[0].trim();
                     redirectionFile = parts[1].trim();
                     redirectOperator = ">";
-                } else if (arguments.contains("1>")){
+                } else if (arguments.contains("1>")) {
                     String[] parts = arguments.split("1>", 2);
                     arguments = parts[0].trim();
                     redirectionFile = parts[1].trim();
                     redirectOperator = "1>";
+                } else if (arguments.contains("2>")) {
+                    String[] parts = arguments.split("2>", 2);
+                    arguments = parts[0].trim();
+                    redirectionFile = parts[1].trim();
+                    redirectOperator = "2>";
                 }
 
-
                 switch(command){
-                    case "exit" : 
+                    case "exit": 
                         exit(arguments);
                         break;
-                    case "echo" :
-                        List<String> tokens  = getTokens(arguments);
+                    case "echo":
+                        List<String> tokens = getTokens(arguments);
                         if(!redirectOperator.isBlank()){
-                            boolean bol = handleRedirection(redirectionFile, redirectOperator);
+                            handleRedirection(redirectionFile, redirectOperator);
                         }
                         System.out.println(String.join("", tokens));
                         System.setOut(System.out);
                         System.setErr(System.err);
                         break;
-                    case "type" :
+                    case "type":
                         type(arguments, directories);
                         break;
-                    case "pwd" :
+                    case "pwd":
                         System.out.println(Main.pseudoDirectory.getAbsolutePath());
                         break;
-                    case "cd" :
+                    case "cd":
                         cd(arguments);
                         break;
-                    default :
-                        //getTokens(arguments).forEach(e -> System.out.println(e));
+                    default:
                         String filePath = isFileExecutable(command, directories);
-                        if(filePath.isEmpty()) System.err.println(command + ": command not found");
-                        else {
-
+                        if(filePath.isEmpty()) {
+                            System.err.println(command + ": command not found");
+                        } else {
                             String[] argument = getTokens(arguments).toArray(new String[0]);
-
                             String[] commandWithArguments = new String[argument.length + 1];
                             commandWithArguments[0] = command;
                             System.arraycopy(argument, 0, commandWithArguments, 1, argument.length);
-                            if(!redirectOperator.isBlank()) {
-                                boolean bol = handleRedirection(redirectionFile, redirectOperator);
+                            if (!redirectOperator.isBlank()) {
+                                handleRedirection(redirectionFile, redirectOperator);
                             }
-                            int exitCode = executeCommand(commandWithArguments);
-
+                            int exitCode = executeCommand(commandWithArguments, redirectionFile, redirectOperator);
                         }
                         break;
                 }
@@ -143,7 +145,6 @@ public class Main {
         if (!sb.isEmpty()) tokens.add(sb.toString());
         return tokens;
     }
-
 
     private static void type(String arguments, String[] directories){
         if(arguments.isEmpty()) return;
@@ -222,81 +223,68 @@ public class Main {
         return "";
     }
 
-    private static boolean handleRedirection(String redirectionFile, String redirectOperator) {
-        if(redirectOperator.equals(">") || redirectOperator.equals("1>")){
+    private static void handleRedirection(String redirectionFile, String redirectOperator) {
+        if (redirectOperator.equals(">") || redirectOperator.equals("1>")) {
             try {
                 System.setOut(new PrintStream(new FileOutputStream(redirectionFile)));
             } catch (FileNotFoundException fnf) {
                 fnf.printStackTrace();
             }
-        } else if (redirectOperator.equals("2>")){
+        } else if (redirectOperator.equals("2>")) {
             try {
                 System.setErr(new PrintStream(new FileOutputStream(redirectionFile)));
             } catch (FileNotFoundException fnf) {
                 fnf.printStackTrace();
             }
         }
-        return true;
     }
 
-    private static int executeCommand(String[] arguments) throws FileNotFoundException {
+    private static int executeCommand(String[] arguments, String redirectionFile, String redirectOperator) throws FileNotFoundException {
         try {
+            ProcessBuilder processBuilder = new ProcessBuilder(arguments);
 
-            Process process = new ProcessBuilder(arguments).start();
+            // Handle redirection if needed
+            if (!redirectOperator.isBlank()) {
+                handleRedirection(redirectionFile, redirectOperator);
+            }
 
+            // Start the process
+            Process process = processBuilder.start();
 
+            // Collect output and error streams
             try (BufferedReader bout = new BufferedReader(new InputStreamReader(process.getInputStream()));
                  BufferedReader berr = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-                 StringBuilder sbOut = new StringBuilder();
-                    StringBuilder sbErr = new StringBuilder();
-                    String line;
+                StringBuilder sbOut = new StringBuilder();
+                StringBuilder sbErr = new StringBuilder();
+                String line;
 
-
-                    while ((line = bout.readLine()) != null) {
-                        sbOut.append(line).append(System.lineSeparator());
-                    }
-
-                    while ((line = berr.readLine()) != null) {
-                        sbErr.append(line).append(System.lineSeparator());
-                    }
-
-
-                    System.out.println(sbOut.toString());
-                    System.out.println(sbErr.toString());
-                } catch (IOException io) {
-                    io.printStackTrace();
+                // Read the standard output
+                while ((line = bout.readLine()) != null) {
+                    sbOut.append(line).append(System.lineSeparator());
                 }
 
+                // Read the standard error
+                while ((line = berr.readLine()) != null) {
+                    sbErr.append(line).append(System.lineSeparator());
+                }
 
-            int exit = process.waitFor();
-            System.setOut(System.out);
-            System.setErr(System.err);
+                // Print standard output and error if no redirection
+                if (sbOut.length() > 0) {
+                    System.out.print(sbOut.toString());
+                }
+                if (sbErr.length() > 0) {
+                    System.err.print(sbErr.toString());
+                }
+            } catch (IOException io) {
+                io.printStackTrace();
+            }
 
-            return exit;
-
-        } catch (InterruptedException | IOException ioe) {
-            System.err.println("Process interrupted: " + ioe.getMessage());
-            ioe.printStackTrace();
-            throw new RuntimeException(ioe);
+            // Wait for process to complete
+            int exitCode = process.waitFor();
+            return exitCode;
+        } catch (IOException | InterruptedException e) {
+            System.err.println("Error during command execution: " + e.getMessage());
+            return -1;
         }
     }
-
-
-    private static void printContent(List<String> files){
-        files.stream().forEach(file -> {
-            if(Files.exists(Paths.get(file)) && Files.isReadable(Paths.get(file))){
-                try(BufferedReader br = new BufferedReader(new FileReader(file))){
-                    String line;
-                    while((line = br.readLine()) != null){
-                        System.out.print(line);
-                    }
-                } catch (IOException io){
-                    io.printStackTrace();
-                }
-            }
-        });
-        System.out.println();
-    }
-
 }
-
