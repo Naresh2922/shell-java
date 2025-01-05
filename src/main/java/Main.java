@@ -111,22 +111,18 @@ public class Main {
                     sb.append(character);
                 }
             } else if (character == quote) {
-                tokens.add(sb.toString());
-                sb.setLength(0);
                 quote = '-';
                 inQuote = false;
             } else if (!inQuote && (character == '\'' || character == '\"') ) {
                 quote = character;
                 inQuote = true;
             } else if (character == ' ' && !inQuote){
+                tokens.add(sb.toString());
+                sb.setLength(0);
                 while((++i < inputString.length()) && (character = inputString.charAt(i)) == ' '){
                     continue;
                 }
                 --i;
-                if (!sb.isEmpty()){
-                    tokens.add(sb.toString());
-                    sb.setLength(0);
-                }
             } else {
                 sb.append(character);
             }
