@@ -90,7 +90,7 @@ public class Main {
 
     private static List<String> getTokens(String inputString){
         char quote = '-';
-        List<Character> escapes = Arrays.asList('\"', '$', '`', ' ', '\\', 'n');
+        List<Character> escapes = Arrays.asList('\"', '$', '`', ' ', '\\');
         List<String> tokens = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         boolean inQuote = false;
