@@ -281,10 +281,21 @@ public class Main {
 
             // Wait for process to complete
             int exitCode = process.waitFor();
+
+            // Reset the System.out and System.err streams after the redirection
+            if (!redirectOperator.isBlank()) {
+                System.setOut(System.out);
+                System.setErr(System.err);
+            }
+
+            // Print the prompt after command execution
+            System.out.print("$ ");  // Ensure the prompt is printed after execution
+
             return exitCode;
         } catch (IOException | InterruptedException e) {
             System.err.println("Error during command execution: " + e.getMessage());
             return -1;
         }
     }
+
 }
