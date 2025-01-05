@@ -235,59 +235,53 @@ public class Main {
     }
 
     private static int executeCommand(String[] arguments) throws FileNotFoundException {
-
         try {
-                ExecutorService executorService =  Executors.newFixedThreadPool(2);
+            ExecutorService executorService = Executors.newFixedThreadPool(2);
 
-                Process process = Runtime.getRuntime().exec(arguments);
+            Process process = Runtime.getRuntime().exec(arguments);
 
-                CountDownLatch countDown = new CountDownLatch(1);
+            CountDownLatch countDown = new CountDownLatch(1); // Fixed latch count to 1
 
-                executorService.submit(() -> {
-                    try(BufferedReader bout = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                        BufferedReader berr = new BufferedReader(new InputStreamReader(process.getErrorStream()))){
-                        StringBuilder sbOut = new StringBuilder();
-                        StringBuilder sbErr = new StringBuilder();
-                        boolean firstLine = true;
-                        String line;
-                        while((line = bout.readLine()) != null){
-                            if(!firstLine){
-                                sbOut.append(System.lineSeparator());
-                            }
-                            sbOut.append(line);
-                            firstLine = false;
+            executorService.submit(() -> {
+                try (BufferedReader bout = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                     BufferedReader berr = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                    StringBuilder sbOut = new StringBuilder();
+                    StringBuilder sbErr = new StringBuilder();
+                    String line;
 
-                        }
 
-                        while((line = berr.readLine()) != null){
-                            if(!firstLine){
-                                sbErr.append(System.lineSeparator());
-                            }
-                            sbErr.append(line);
-                            firstLine = false;
-
-                        }
-                        System.out.println(sbOut.toString());
-                        System.out.println(sbErr.toString());
-                    } catch (IOException io){
-                        io.printStackTrace();
-                    } finally {
-                        countDown.countDown();
+                    while ((line = bout.readLine()) != null) {
+                        sbOut.append(line).append(System.lineSeparator());
                     }
-                });
 
-                countDown.await();
-                int exit = process.waitFor();
-                executorService.shutdown();
-                return exit;
+                    while ((line = berr.readLine()) != null) {
+                        sbErr.append(line).append(System.lineSeparator());
+                    }
 
 
-            } catch (InterruptedException | IOException ioe) {
-                System.err.println("process Interrupted : " + ioe.getMessage());
-                ioe.printStackTrace();
-            }
-        return 0;
+                    System.out.println(sbOut.toString());
+                    System.out.println(sbErr.toString());
+                } catch (IOException io) {
+                    io.printStackTrace();
+                } finally {
+                    countDown.countDown();
+                }
+            });
+
+            countDown.await();
+
+            int exit = process.waitFor();
+            executorService.shutdown();
+
+            return exit;
+
+        } catch (InterruptedException | IOException ioe) {
+            System.err.println("Process interrupted: " + ioe.getMessage());
+            ioe.printStackTrace();
+            throw new RuntimeException(ioe); 
+        }
     }
+
 
     private static void printContent(List<String> files){
         files.stream().forEach(file -> {
