@@ -41,31 +41,15 @@ public class Main {
                     arguments = inputArray.length > 1 ? inputArray[1].trim() : "";
                 }
 
-                if (arguments.contains("2>")) {
-                    String[] parts = arguments.split("2>", 2);
-                    arguments = parts[0].trim();
-                    redirectionFile = parts[1].trim();
-                    redirectOperator = "2>";
-                } else if (arguments.contains("1>>")) {
-                    String[] parts = arguments.split("1>>", 2);
-                    arguments = parts[0].trim();
-                    redirectionFile = parts[1].trim();
-                    redirectOperator = "1>>";
-                }else if (arguments.contains(">>")) {
-                    String[] parts = arguments.split(">>", 2);
-                    arguments = parts[0].trim();
-                    redirectionFile = parts[1].trim();
-                    redirectOperator = ">>";
-                }  else if (arguments.contains("1>")) {
-                    String[] parts = arguments.split("1>", 2);
-                    arguments = parts[0].trim();
-                    redirectionFile = parts[1].trim();
-                    redirectOperator = "1>";
-                } else if (arguments.contains(">")) {
-                    String[] parts = arguments.split(">", 2);
-                    arguments = parts[0].trim();
-                    redirectionFile = parts[1].trim();
-                    redirectOperator = ">";
+                String[] operators = {"2>", "1>>", ">>", "1>", ">"};
+                for (String op : operators) {
+                    if (arguments.contains(op)) {
+                        String[] parts = arguments.split(op, 2);
+                        arguments = parts[0].trim();
+                        redirectionFile = parts[1].trim();
+                        redirectOperator = op;
+                        break;
+                    }
                 }
 
                 switch(command){
@@ -244,9 +228,15 @@ public class Main {
             
 
             if (!redirectOperator.isBlank()) {
-                if (redirectOperator.equals(">") || redirectOperator.equals("1>") || redirectOperator.equals("1>>") ||  redirectOperator.equals(">>")) {
+                if (redirectOperator.equals(">") || redirectOperator.equals("1>") ) {
                     processBuilder.redirectOutput(new File(redirectionFile));
                     processBuilder.redirectError(ProcessBuilder.Redirect.INHERIT); 
+                } else if (redirectOperator.equals("1>>") ||  redirectOperator.equals(">>")){
+                    processBuilder.redirectOutput(ProcessBuilder.Redirect.appendTo(new File(redirectionFile)));
+                    processBuilder.redirectError(ProcessBuilder.Redirect.INHERIT);
+                }else if (redirectOperator.equals("2>>")){
+                    processBuilder.redirectError(ProcessBuilder.Redirect.appendTo(new File(redirectionFile)));
+                    processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
                 } else if (redirectOperator.equals("2>")) {
                     processBuilder.redirectError(new File(redirectionFile));
                     processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT); 
