@@ -238,7 +238,8 @@ public class Main {
                     processBuilder.redirectOutput(new File(redirectionFile));
                     processBuilder.redirectError(ProcessBuilder.Redirect.INHERIT); 
                 } else if (redirectOperator.equals("2>")) {
-                    processBuilder.redirectError(new File(redirectionFile)); 
+                    processBuilder.redirectError(new File(redirectionFile));
+                    processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT); 
                 }
                 Process process = processBuilder.start();
                 int exitCode = process.waitFor();
