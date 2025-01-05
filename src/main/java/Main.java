@@ -24,8 +24,6 @@ public class Main {
         System.out.print("$ ");
         try(Scanner scanner = new Scanner(System.in)){
             while(true){
-                System.setOut(System.out);
-                System.setErr(System.err);
                 String input = scanner.nextLine().trim();
                 String[] inputArray;
                 String command;
@@ -68,10 +66,9 @@ public class Main {
                         List<String> tokens = getTokens(arguments);
                         if(!redirectOperator.isBlank()){
                             executeNonBuiltInCommand(command, directories, arguments, redirectOperator, redirectionFile);
+                            break;
                         }
                         System.out.println(String.join("", tokens));
-                        System.setOut(System.out);
-                        System.setErr(System.err);
                         break;
                     case "type":
                         type(arguments, directories);
@@ -228,22 +225,6 @@ public class Main {
             }
         }
         return "";
-    }
-
-    private static void handleRedirection(String redirectionFile, String redirectOperator) {
-        if (redirectOperator.equals(">") || redirectOperator.equals("1>")) {
-            try {
-                System.setOut(new PrintStream(new FileOutputStream(redirectionFile)));
-            } catch (FileNotFoundException fnf) {
-                fnf.printStackTrace();
-            }
-        } else if (redirectOperator.equals("2>")) {
-            try {
-                System.setErr(new PrintStream(new FileOutputStream(redirectionFile)));
-            } catch (FileNotFoundException fnf) {
-                fnf.printStackTrace();
-            }
-        }
     }
 
     private static int executeCommand(String[] arguments, String redirectionFile, String redirectOperator) throws FileNotFoundException {
