@@ -1,9 +1,5 @@
 import java.io.*;
-import java.nio.file.DirectoryStream;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.nio.file.Files;
 import java.util.stream.Stream;
 import java.nio.file.Paths;
@@ -274,7 +270,7 @@ public class Main {
 
             return exitCode;
         } catch (IOException | InterruptedException e) {
-            System.err.println(arguments[0] + ": command not found");
+            System.err.println("Exception Occurred : " + e.getMessage());
             return -1;
         }
     }
