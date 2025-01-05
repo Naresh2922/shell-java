@@ -41,21 +41,21 @@ public class Main {
                     arguments = inputArray.length > 1 ? inputArray[1].trim() : "";
                 }
 
-                if (arguments.contains(">")) {
+                if (arguments.contains("2>")) {
                     String[] parts = arguments.split(">", 2);
                     arguments = parts[0].trim();
                     redirectionFile = parts[1].trim();
-                    redirectOperator = ">";
+                    redirectOperator = "2>";
                 } else if (arguments.contains("1>")) {
                     String[] parts = arguments.split("1>", 2);
                     arguments = parts[0].trim();
                     redirectionFile = parts[1].trim();
                     redirectOperator = "1>";
-                } else if (arguments.contains("2>")) {
-                    String[] parts = arguments.split("2>", 2);
+                } else if (arguments.contains(">")) {
+                    String[] parts = arguments.split(">", 2);
                     arguments = parts[0].trim();
                     redirectionFile = parts[1].trim();
-                    redirectOperator = "2>";
+                    redirectOperator = ">";
                 }
 
                 switch(command){
@@ -68,7 +68,7 @@ public class Main {
                             executeNonBuiltInCommand(command, directories, arguments, redirectOperator, redirectionFile);
                             break;
                         }
-                        System.out.println(String.join("", tokens));
+                        System.out.println(String.join(" ", tokens));
                         break;
                     case "type":
                         type(arguments, directories);
@@ -123,7 +123,10 @@ public class Main {
                     continue;
                 }
                 --i;
-                sb.append(' ');
+                if (!sb.isEmpty()){
+                    tokens.add(sb.toString());
+                    sb.setLength(0);
+                }
             } else {
                 sb.append(character);
             }
@@ -133,12 +136,15 @@ public class Main {
     }
 
     private static int executeNonBuiltInCommand(String command, String[] directories, String arguments, String redirectOperator, String redirectionFile) throws FileNotFoundException{
-        String filePath = isFileExecutable(command, directories);
+        String filePath = "huhuh";
+        //isFileExecutable(command, directories);
         if(filePath.isEmpty()) {
             System.err.println(command + ": command not found");
             return -1;
         } else {
+            //getTokens(arguments).forEach(System.out::println);
             String[] argument = getTokens(arguments).toArray(new String[0]);
+
             String[] commandWithArguments = new String[argument.length + 1];
             commandWithArguments[0] = command;
             System.arraycopy(argument, 0, commandWithArguments, 1, argument.length);
